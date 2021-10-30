@@ -6,7 +6,7 @@ Please remember to use only legal streams.
 
 ## Run 
 ```
-python playlist_browser_gui.py
+python iptv_playlist_browser_gui.py
 ```
 or try the [experimental binary](https://github.com/PhunkyBob/iptv_playlist_browser/releases/latest). 
 
