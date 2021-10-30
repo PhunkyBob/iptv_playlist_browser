@@ -25,7 +25,7 @@ margin = 10
 
 class MainWindow(QMainWindow, Ui_MainWindow):
     config_file: str = "config.ini"
-    main_title: str = "Playlist Browser"
+    main_title: str = "IPTV Playlist Browser"
     git_repo_url: str = "https://github.com/PhunkyBob/iptv_playlist_browser"
     latest_version_url = "https://raw.githubusercontent.com/PhunkyBob/iptv_playlist_browser/master/VERSION"
     pl: Playlist = None
@@ -61,6 +61,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.version = version
 
         # Set default values
+        self.setWindowTitle(f"{self.main_title}")
         self.date_start.setDate(QtCore.QDate(now.year, now.month, now.day))
         self.time_start.setTime(QtCore.QTime(now.hour, (now.minute // 5) * 5))
         self.txt_duration.setText('80')
