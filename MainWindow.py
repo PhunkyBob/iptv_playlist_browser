@@ -63,6 +63,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # Set default values
         self.date_start.setDate(QtCore.QDate(now.year, now.month, now.day))
         self.time_start.setTime(QtCore.QTime(now.hour, (now.minute // 5) * 5))
+        self.txt_duration.setText('80')
         self.chk_catchup.setEnabled(False)
         self.date_start.setEnabled(False)
         self.time_start.setEnabled(False)
@@ -452,7 +453,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                     password = self.pl.api_account["user_info"]["password"]
                     date = self.date_start.text()
                     time = self.time_start.text().replace(":", "-")
-                    duration = 80
+                    duration = self.txt_duration.text()
                     url = f"{protocol}://{server}:{port}/streaming/timeshift.php?username={username}&password={password}&stream={stream}&start={date}:{time}&duration={duration}"
             self.txt_url.setText(url)
 
@@ -473,6 +474,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             )
             self.time_start.setTime(QtCore.QTime.fromString(item["start_time"]))
             self.txt_duration.setText(str(item["duration"]))
+            self.change_catchup_settings()
 
     def watch(self):
         """ "Launch player with correct parameters. """
