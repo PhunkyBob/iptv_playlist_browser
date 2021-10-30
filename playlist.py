@@ -1,0 +1,251 @@
+# -*- coding: utf-8 -*-
+"""
+This class manage the conversion of a playlist or Xtream credentials to groups / categories / channels.
+"""
+
+import os
+import re
+import requests
+import json
+import base64
+
+"""
+Xtream API
+# Account
+{server}/player_api.php?username={username}&password={password}
+
+# Live categories
+{server}/player_api.php?username={username}&password={password}&action=get_live_categories
+
+# Live streams
+{server}/player_api.php?username={username}&password={password}&action=get_live_streams
+
+# EPG
+{server}/player_api.php?username={username}&password={password}&action=get_simple_data_table&stream_id=53375
+"""
+class Playlist():
+    channels = {}
+    channels_details = {}
+    channels_epg = {}
+    movies = {}
+    series = {}
+    api_account = {}
+    temp_folder = "temp"
+    default_category: str = 'OTHERS'
+
+    def __init__(self, server="", username="", password="", filename="", try_xtream=True, sep_lvl1='▼---', sep_lvl2='---●★') -> None:
+        if filename:
+            # If the file is remote, download it
+            if filename.lower().startswith("http"):
+                response = requests.get(filename)
+                if response.status_code not in (200, 201):
+                    print("[ERROR] Can't download file")
+                    return False
+                
+                os.makedirs(f"{self.temp_folder}", exist_ok=True)
+                tmp_filename = "temp.m3u"
+                if 'Content-Disposition' in response.headers:
+                    if res := re.search(r"filename=\"(.+?)\"", response.headers['Content-Disposition']):
+                        if res[1]:
+                            tmp_filename = res[1]
+
+                cached_file = f"{self.temp_folder}/{tmp_filename}"
+                with open(cached_file, "wb") as pl:
+                    pl.write(response.content)
+                filename = cached_file
+
+            if not os.path.isfile(filename):
+                print(f"[ERROR] File \"{filename}\" is unavailable...")
+                return False
+        
+            if try_xtream:
+                # Even if it's a playlist, we try to get Xtream credentials
+                with open(filename, 'r', encoding='utf-8') as f:
+                    while content := f.readline():
+                        if res := re.search(r"^http(s?)://(.+)/(.+)/(.+)/([\d]+)$", content.strip(), re.IGNORECASE):
+                            server = 'http' + res[1] + '://' + res[2]
+                            username = res[3]
+                            password = res[4]
+                            if self.load_from_api(server, username, password, sep_lvl1=sep_lvl1, sep_lvl2=sep_lvl2):
+                                return
+                            break
+            
+            # Load from a file
+            self.load_from_file(filename, sep_lvl1, sep_lvl2)
+            return
+
+        # Load from API
+        self.load_from_api(server, username, password, sep_lvl1=sep_lvl1, sep_lvl2=sep_lvl2)
+        return
+
+
+    def load_from_api(self, server, username, password, sep_lvl1='', sep_lvl2='---'):
+        """ Create a playlist from Xtream credentials. """
+        urls = {'channels': {}, 'movies': {}, 'series': {}}
+        urls_details = {}
+        current_lvl1 = ""
+        current_lvl1_previous = ""
+        current_lvl2 = ""
+        try:
+            # Connect to the API and get global infos
+            res = requests.get(f"{server}/player_api.php?username={username}&password={password}")
+            if res.status_code not in (200, 201):
+                print("[ERROR] Bad credentials...")
+                return False
+            self.api_account = json.loads(res.text)
+            res = requests.get(f"{server}/player_api.php?username={username}&password={password}&action=get_live_categories")
+            if res.status_code not in (200, 201):
+                print("[ERROR] Bad credentials...")
+                return False
+            live_categories = json.loads(res.text)
+            categories = {c['category_id']: c['category_name'] for c in live_categories}
+            for c in live_categories:
+                urls['channels'][c['category_name']] = {}
+
+            res = requests.get(f"{server}/player_api.php?username={username}&password={password}&action=get_live_streams")
+            if res.status_code not in (200, 201):
+                print("[ERROR] Bad credentials...")
+                return False
+            live_streams = json.loads(res.text)
+            for s in live_streams:
+                url = f"{server}/{username}/{password}/{s['stream_id']}"
+                # Decide what category we're in
+                if s['category_id'] not in categories:
+                    categories[s['category_id']] = 'OTHERS'
+                    if 'OTHERS' not in urls['channels']:
+                        urls['channels']['OTHERS'] = {}
+                current_lvl1 = categories[s['category_id']]
+                if current_lvl1 != current_lvl1_previous:
+                    current_lvl2 = self.default_category
+                    if current_lvl2 not in urls['channels'][current_lvl1]:
+                        urls['channels'][current_lvl1][current_lvl2] = {}
+                title = s['name'].strip()
+                if sep_lvl1 and sep_lvl1 in title:
+                    continue
+                if sep_lvl2 and sep_lvl2 in title:
+                    current_lvl2 = title
+                    if current_lvl2 not in urls['channels'][current_lvl1]:
+                        urls['channels'][current_lvl1][current_lvl2] = {}
+                    current_lvl1_previous = current_lvl1
+                    continue
+                urls['channels'][current_lvl1][current_lvl2][title] = url
+                # Save details for later (EPG).
+                urls_details[url] = {}
+                for key in ('is_adult', 'epg_channel_id', 'tv_archive', 'tv_archive_duration', 'stream_icon', 'stream_id', 'direct_source'):
+                    urls_details[url][key] = s[key]    
+                current_lvl1_previous = current_lvl1
+        except:
+            return False
+        self.channels = urls['channels']
+        self.channels_details = urls_details
+        return True
+
+
+    def load_from_file(self, filename, sep_lvl1='▼---', sep_lvl2='---●★'):
+        """ Create a playlist from a m3u file. """
+        urls = {'channels': {}, 'movies': {}, 'series': {}}
+        current_lvl1 = {'channels': self.default_category, 'movies': self.default_category, 'series': self.default_category}
+        current_lvl2 = {'channels': self.default_category, 'movies': self.default_category, 'series': self.default_category}
+
+        # TODO: load each line as CSV because the "," in a title could create problems.
+        with open(filename, 'r', encoding='utf-8') as f:
+            while content := f.readline():
+                content = content.strip()
+                # content = normalize("NFKD", content)
+                if not content.startswith('#EXTINF:-1'):
+                    continue
+                title = ','.join(content.split(',')[1:])
+
+                group_title = ''
+                if res := re.search(r"group-title=\"(.+)\"", content):
+                    group_title = res[1]
+                url = f.readline().strip()
+
+                url_type = 'channels'
+                if re.match(r"http(.+)/movie/", url):
+                    url_type = 'movies'
+                    pass
+                if re.match(r"http(.+)/series/", url):
+                    url_type = 'series'
+
+                # Decide what category we're in
+                if sep_lvl1 and sep_lvl1 in title:
+                    current_lvl1[url_type] = group_title if group_title else title
+                    current_lvl2[url_type] = self.default_category
+                    continue
+                if sep_lvl2 and sep_lvl2 in title:
+                    current_lvl2[url_type] = title
+                    continue
+
+                # Test if is movie
+                if url_type == 'movies':
+                    continue
+                    # TODO: later
+                    default_categ = self.default_category
+                    if res := re.search(r"\|(.+?)\|", title):
+                        default_categ = res[1].strip().upper()
+                    current_lvl1[url_type] = default_categ
+                    if current_lvl1[url_type] not in urls[url_type]:
+                        urls[url_type][current_lvl1[url_type]] = {}
+                    if group_title not in urls[url_type][current_lvl1[url_type]]:
+                        urls[url_type][current_lvl1[url_type]][group_title] = {}
+                    urls[url_type][current_lvl1[url_type]][group_title][title] = url
+                    continue
+                # Test if is serie
+                if url_type == 'series':
+                    # TODO: later
+                    continue
+                
+                if current_lvl1[url_type] not in urls[url_type]:
+                    urls[url_type][current_lvl1[url_type]] = {}
+                if current_lvl2[url_type] not in urls[url_type][current_lvl1[url_type]]:
+                    urls[url_type][current_lvl1[url_type]][current_lvl2[url_type]] = {}
+                urls[url_type][current_lvl1[url_type]][current_lvl2[url_type]][title] = url
+        self.channels = urls['channels']
+        self.movies = urls['movies']
+        self.series = urls['series']
+        return True
+
+    def update_epg(self, stream):
+        """ Call API to get the EPG for a stream. """
+        server = self.api_account["server_info"]["url"]
+        protocol = self.api_account["server_info"]["server_protocol"]
+        port = self.api_account["server_info"]["port"]
+        username = self.api_account["user_info"]["username"]
+        password = self.api_account["user_info"]["password"]
+        url = f"{protocol}://{server}:{port}/player_api.php?username={username}&password={password}&action=get_simple_data_table&stream_id={stream}"
+        res = requests.get(url)
+        if res.status_code not in (200, 201):
+            print("[ERROR] Bad credentials...")
+            return False
+        
+        self.channels_epg[stream] = {}
+        for elem in json.loads(res.text)['epg_listings']:
+            if elem['has_archive'] or elem['now_playing']:
+                epg = {}
+                title = self.decode(elem['title'])
+                description = self.decode(elem['description'])
+                start_timestamp = int(elem['start_timestamp'])
+                stop_timestamp = int(elem['stop_timestamp'])
+                res = re.search("(\d\d\d\d-\d\d-\d\d) (\d\d:\d\d):\d\d", elem['start'])
+                start_date = res[1]
+                start_time = res[2]
+                duration = int((stop_timestamp - start_timestamp) / 60)
+                epg['title'] = title
+                epg['description'] = description
+                epg['start_date'] = start_date
+                epg['start_time'] = start_time
+                epg['duration'] = duration
+                id = f"[{start_date} {start_time}] {title} ({duration} min)"
+                self.channels_epg[stream][id] = epg
+
+
+    def decode(self, base64_string):
+        """ Decode strings from the EPG. """
+        base64_bytes = base64_string.encode("utf-8")
+        result_string_bytes = base64.b64decode(base64_bytes)
+        result_string = result_string_bytes.decode("utf-8")
+        return result_string
+
+if __name__ == "__main__":
+    Playlist(filename='tv_channels.m3u')
