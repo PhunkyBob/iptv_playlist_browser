@@ -172,6 +172,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.chk_catchup.stateChanged.connect(self.change_catchup_settings)
         self.date_start.dateChanged.connect(self.change_catchup_settings)
         self.time_start.timeChanged.connect(self.change_catchup_settings)
+        self.txt_duration.textChanged.connect(self.change_catchup_settings)
         self.txt_url.textChanged.connect(self.url_changed)
         self.cmb_epg.currentIndexChanged.connect(self.select_epg)
 
