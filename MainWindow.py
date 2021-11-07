@@ -42,6 +42,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     config_sep_1: str = ""
     config_sep_2: str = ""
     config_try_xtream_code: bool = True
+    config_add_minutes: int = 0
 
     # Latest values
     latest_username: str = ""
@@ -105,6 +106,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                     in ("0", "", "n", "no", "false")
                     else True
                 )
+            if "PREFERENCES" in config and "catchup_add_minutes" in config["PREFERENCES"]:
+                self.config_add_minutes = int(config["PREFERENCES"]["catchup_add_minutes"])
             if "XTREAM_CODE" in config and "username" in config["XTREAM_CODE"]:
                 self.latest_username = config["XTREAM_CODE"]["username"]
             if "XTREAM_CODE" in config and "password" in config["XTREAM_CODE"]:
@@ -186,6 +189,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.config_try_xtream_code,
             self.config_sep_1,
             self.config_sep_2,
+            self.config_add_minutes
         )
         dialog.exec()
         if dialog.validated:
@@ -196,11 +200,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.config_try_xtream_code = dialog.try_xtream_code
             self.config_sep_1 = dialog.playlist_group_separator
             self.config_sep_2 = dialog.playlist_category_separator
+            self.config_add_minutes = dialog.catchup_add_minutes
             self.save_config()
 
     def open_local_file(self):
         """ Open "open local file" dialog. """
-        dialog = OpenLocalFile(self, self.latest_local, self.config_remember)
+        dialog = OpenLocalFile(self, self.latest_local, self.config_remember, self.config_sep_1, self.config_sep_2)
         dialog.exec()
         if dialog.remember and dialog.url:
             self.latest_local = dialog.url
@@ -209,8 +214,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.open_file(
                 filename=dialog.url,
                 try_xtream=self.config_try_xtream_code,
-                sep_lvl1=self.config_sep_1,
-                sep_lvl2=self.config_sep_2,
+                sep_lvl1=dialog.sep_lvl1,
+                sep_lvl2=dialog.sep_lvl2,
             )
 
     def open_remote_file(self):
@@ -475,7 +480,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 QtCore.QDate.fromString(item["start_date"], QtCore.Qt.ISODate)
             )
             self.time_start.setTime(QtCore.QTime.fromString(item["start_time"]))
-            self.txt_duration.setText(str(item["duration"]))
+            self.txt_duration.setText(str(item["duration"] + self.config_add_minutes))
             self.change_catchup_settings()
 
     def watch(self):
@@ -519,6 +524,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         config["PREFERENCES"]["try_xtream_code"] = str(self.config_try_xtream_code)
         config["PREFERENCES"]["playlist_group_separator"] = self.config_sep_1
         config["PREFERENCES"]["playlist_categ_separator"] = self.config_sep_2
+        config["PREFERENCES"]["catchup_add_minutes"] = str(self.config_add_minutes)
 
         config["XTREAM_CODE"] = {}
         config["XTREAM_CODE"]["username"] = self.latest_username

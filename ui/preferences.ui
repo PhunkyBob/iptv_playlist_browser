@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>622</width>
-    <height>335</height>
+    <height>417</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -173,8 +173,8 @@
   <widget class="QPushButton" name="btn_ok">
    <property name="geometry">
     <rect>
-     <x>410</x>
-     <y>290</y>
+     <x>420</x>
+     <y>380</y>
      <width>93</width>
      <height>28</height>
     </rect>
@@ -186,8 +186,8 @@
   <widget class="QPushButton" name="btn_cancel">
    <property name="geometry">
     <rect>
-     <x>510</x>
-     <y>290</y>
+     <x>520</x>
+     <y>380</y>
      <width>93</width>
      <height>28</height>
     </rect>
@@ -195,6 +195,42 @@
    <property name="text">
     <string>Cancel</string>
    </property>
+  </widget>
+  <widget class="QGroupBox" name="grp_catchup">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>310</y>
+     <width>601</width>
+     <height>61</height>
+    </rect>
+   </property>
+   <property name="title">
+    <string>Catchup</string>
+   </property>
+   <widget class="QLineEdit" name="txt_catchup_min">
+    <property name="geometry">
+     <rect>
+      <x>240</x>
+      <y>20</y>
+      <width>51</width>
+      <height>22</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QLabel" name="lbl_add_minutes">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>20</y>
+      <width>231</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Always add minutes to current EPG</string>
+    </property>
+   </widget>
   </widget>
  </widget>
  <resources/>

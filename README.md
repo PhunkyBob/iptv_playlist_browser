@@ -105,6 +105,7 @@ Give your Xtream Code credentials.
 
 #### Load playlist from local file
 Open a local playlist file (m3u).  
+A preview of the names inside the file allows you to guess what separators should be used. 
 
 #### Load playlist from remote file
 Open a remote playlist file (m3u).  

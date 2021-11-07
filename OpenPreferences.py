@@ -5,7 +5,7 @@ This class allows to display the "Preferences" dialog box.
 
 from PyQt5.QtWidgets import QDialog, QFileDialog
 from PyQt5.uic import loadUi
-from PyQt5 import QtCore
+from PyQt5 import QtCore, QtGui
 import os 
 import tools
 
@@ -17,6 +17,7 @@ class OpenPreferences(QDialog):
     playlist_group_separator: str = ""
     playlist_category_separator: str = ""
     playlist_separator_changed: bool = False
+    catchup_add_minutes: int = 0
     validated: bool = False
 
     def __init__(
@@ -28,6 +29,7 @@ class OpenPreferences(QDialog):
         try_xtream_code=True,
         playlist_group_separator="",
         playlist_category_separator="",
+        catchup_add_minutes=0
     ):
         super().__init__(parent)
         loadUi(tools.resource_path("ui/preferences.ui"), self)
@@ -39,12 +41,15 @@ class OpenPreferences(QDialog):
         self.txt_player_params.setText(player_params)
         self.txt_pl_sep_1.setText(playlist_group_separator)
         self.txt_pl_sep_2.setText(playlist_category_separator)
+        self.txt_catchup_min.setText(str(catchup_add_minutes))
         self.remember_latest = remember_latest
         self.player = player
         self.player_params = player_params
         self.playlist_group_separator = playlist_group_separator
         self.playlist_category_separator = playlist_category_separator
         self.verif_player()
+        self.onlyInt = QtGui.QIntValidator()
+        self.txt_catchup_min.setValidator(self.onlyInt)
         self.connect_signals_slots()
         
 
@@ -86,6 +91,7 @@ class OpenPreferences(QDialog):
         self.player_params = self.txt_player_params.text()
         self.playlist_group_separator = self.txt_pl_sep_1.text()
         self.playlist_category_separator = self.txt_pl_sep_2.text()
+        self.catchup_add_minutes = int(self.txt_catchup_min.text())
         self.validated = True
         self.close()
 
