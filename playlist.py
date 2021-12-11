@@ -169,7 +169,7 @@ class Playlist():
             urls[current_lvl1][current_lvl2][title] = url
             # Save details for later (EPG).
             urls_details[url] = {}
-            for key in ('is_adult', 'epg_channel_id', 'tv_archive', 'tv_archive_duration', 'stream_icon', 'stream_id', 'direct_source'):
+            for key in ('is_adult', 'name', 'stream_type', 'rating', 'epg_channel_id', 'tv_archive', 'tv_archive_duration', 'stream_icon', 'stream_id', 'direct_source'):
                 if key in s:
                     urls_details[url][key] = s[key]    
             current_lvl1_previous = current_lvl1

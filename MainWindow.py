@@ -4,6 +4,8 @@ This class allows to display the main application window.
 """
 
 from PyQt5.QtWidgets import QMainWindow, QMessageBox
+from PyQt5.QtGui import QImage, QPixmap
+from PyQt5.QtCore import Qt
 from main_ui import Ui_MainWindow
 from PyQt5.uic import loadUi
 from playlist import Playlist
@@ -170,10 +172,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         list_height = tab_height - 90
         self.list_categ_vod.resize(list_width, list_height)
         self.list_channels_vod.resize(list_width, list_height)
+        self.picture_vod.resize(list_width, list_height)
         self.txt_filter_groups_vod.resize(list_width - 110, 25)
         self.txt_filter_channels_vod.resize(list_width - 110, 25)
         self.list_categ_vod.move(1 * margin + 0 * list_width, 40)
         self.list_channels_vod.move(2 * margin + 1 * list_width, 40)
+        self.picture_vod.move(3 * margin + 2 * list_width, 40)
         self.txt_filter_groups_vod.move(self.list_categ_vod.pos().x() + 110, margin)
         self.txt_filter_channels_vod.move(
             self.list_channels_vod.pos().x() + 110, margin
@@ -602,6 +606,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.list_channels_vod.clear()
         self.current_categ_vod = ""
         self.txt_url.setText("")
+        self.picture_vod.clear()
         if self.list_categ_vod.currentItem():
             self.current_categ_vod = self.list_categ_vod.currentItem().text()
             # print(self.current_categ_2)
@@ -614,7 +619,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.list_channels_vod.setCurrentItem(None)
         self.list_channels_vod.clear()
         self.current_channels_vod = {}
-
+        self.picture_vod.clear()
+        self.txt_url.setText("")
         if self.current_categ_vod:
             for channel in self.pl.vod[self.current_categ_vod]["OTHERS"]:
                 if fltr.lower() in channel.lower():
@@ -639,6 +645,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             channel = self.list_channels_vod.currentItem().text()
             url = self.current_channels_vod[channel]
             self.txt_url.setText(url)
+
+            url_image = self.pl.vod_details[url]["stream_icon"]
+            image = QImage()
+            image.loadFromData(requests.get(url_image).content)
+            self.picture_vod.setPixmap(QPixmap(image).scaled(self.picture_vod.width(), self.picture_vod.height(), Qt.KeepAspectRatio, Qt.SmoothTransformation))
         self.hide_loader()
 
 
