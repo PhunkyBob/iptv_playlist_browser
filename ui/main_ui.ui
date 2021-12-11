@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>847</width>
-    <height>672</height>
+    <width>864</width>
+    <height>720</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -24,146 +24,398 @@
     <normaloff>../resources/play-button.png</normaloff>../resources/play-button.png</iconset>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <widget class="QListWidget" name="list_categ_1">
+   <widget class="QTabWidget" name="tab_main">
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>40</y>
-      <width>256</width>
-      <height>421</height>
-     </rect>
-    </property>
-   </widget>
-   <widget class="QListWidget" name="list_categ_2">
-    <property name="geometry">
-     <rect>
-      <x>290</x>
-      <y>40</y>
-      <width>256</width>
-      <height>421</height>
-     </rect>
-    </property>
-   </widget>
-   <widget class="QListWidget" name="list_channels">
-    <property name="geometry">
-     <rect>
-      <x>570</x>
-      <y>40</y>
-      <width>256</width>
-      <height>421</height>
-     </rect>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="btn_watch">
-    <property name="geometry">
-     <rect>
-      <x>730</x>
-      <y>470</y>
-      <width>93</width>
-      <height>28</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Watch</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="lbl_groups">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>15</y>
-      <width>121</width>
-      <height>16</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Groups</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="lbl_categories">
-    <property name="geometry">
-     <rect>
-      <x>290</x>
-      <y>15</y>
-      <width>121</width>
-      <height>16</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Categories</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="lbl_channels">
-    <property name="geometry">
-     <rect>
-      <x>570</x>
-      <y>15</y>
-      <width>121</width>
-      <height>16</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Channels</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="lbl_wait">
-    <property name="geometry">
-     <rect>
-      <x>270</x>
-      <y>140</y>
-      <width>301</width>
-      <height>241</height>
-     </rect>
-    </property>
-    <property name="font">
-     <font>
-      <pointsize>28</pointsize>
-     </font>
-    </property>
-    <property name="frameShape">
-     <enum>QFrame::NoFrame</enum>
-    </property>
-    <property name="text">
-     <string>LOADING...</string>
-    </property>
-    <property name="alignment">
-     <set>Qt::AlignCenter</set>
-    </property>
-   </widget>
-   <widget class="QLineEdit" name="txt_filter_groups">
-    <property name="geometry">
-     <rect>
-      <x>120</x>
       <y>10</y>
-      <width>141</width>
-      <height>25</height>
+      <width>841</width>
+      <height>571</height>
      </rect>
     </property>
-    <property name="font">
-     <font>
-      <pointsize>8</pointsize>
-     </font>
+    <property name="currentIndex">
+     <number>0</number>
     </property>
-   </widget>
-   <widget class="QLineEdit" name="txt_filter_categories">
-    <property name="geometry">
-     <rect>
-      <x>402</x>
-      <y>10</y>
-      <width>141</width>
-      <height>25</height>
-     </rect>
-    </property>
-   </widget>
-   <widget class="QLineEdit" name="txt_filter_channels">
-    <property name="geometry">
-     <rect>
-      <x>682</x>
-      <y>10</y>
-      <width>141</width>
-      <height>25</height>
-     </rect>
-    </property>
+    <widget class="QWidget" name="tab">
+     <attribute name="title">
+      <string>Live</string>
+     </attribute>
+     <widget class="QLabel" name="lbl_categories">
+      <property name="geometry">
+       <rect>
+        <x>290</x>
+        <y>15</y>
+        <width>121</width>
+        <height>16</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Categories</string>
+      </property>
+     </widget>
+     <widget class="QFrame" name="frm_catchup">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>470</y>
+        <width>821</width>
+        <height>61</height>
+       </rect>
+      </property>
+      <property name="frameShape">
+       <enum>QFrame::StyledPanel</enum>
+      </property>
+      <property name="frameShadow">
+       <enum>QFrame::Raised</enum>
+      </property>
+      <widget class="QTimeEdit" name="time_start">
+       <property name="geometry">
+        <rect>
+         <x>250</x>
+         <y>0</y>
+         <width>71</width>
+         <height>22</height>
+        </rect>
+       </property>
+      </widget>
+      <widget class="QComboBox" name="cmb_epg">
+       <property name="geometry">
+        <rect>
+         <x>410</x>
+         <y>0</y>
+         <width>401</width>
+         <height>22</height>
+        </rect>
+       </property>
+      </widget>
+      <widget class="QLineEdit" name="txt_duration">
+       <property name="geometry">
+        <rect>
+         <x>330</x>
+         <y>0</y>
+         <width>51</width>
+         <height>22</height>
+        </rect>
+       </property>
+      </widget>
+      <widget class="QDateEdit" name="date_start">
+       <property name="geometry">
+        <rect>
+         <x>130</x>
+         <y>0</y>
+         <width>110</width>
+         <height>22</height>
+        </rect>
+       </property>
+       <property name="displayFormat">
+        <string>yyyy-MM-dd</string>
+       </property>
+      </widget>
+      <widget class="QCheckBox" name="chk_catchup">
+       <property name="geometry">
+        <rect>
+         <x>0</x>
+         <y>0</y>
+         <width>121</width>
+         <height>20</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Catch up replay</string>
+       </property>
+      </widget>
+      <widget class="QLabel" name="lbl_catchup">
+       <property name="geometry">
+        <rect>
+         <x>0</x>
+         <y>30</y>
+         <width>311</width>
+         <height>16</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>No catchup available</string>
+       </property>
+      </widget>
+     </widget>
+     <widget class="QLabel" name="lbl_channels">
+      <property name="geometry">
+       <rect>
+        <x>570</x>
+        <y>15</y>
+        <width>121</width>
+        <height>16</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Channels</string>
+      </property>
+     </widget>
+     <widget class="QListWidget" name="list_channels">
+      <property name="geometry">
+       <rect>
+        <x>570</x>
+        <y>40</y>
+        <width>256</width>
+        <height>421</height>
+       </rect>
+      </property>
+     </widget>
+     <widget class="QLineEdit" name="txt_filter_categories">
+      <property name="geometry">
+       <rect>
+        <x>402</x>
+        <y>10</y>
+        <width>141</width>
+        <height>25</height>
+       </rect>
+      </property>
+     </widget>
+     <widget class="QListWidget" name="list_categ_2">
+      <property name="geometry">
+       <rect>
+        <x>290</x>
+        <y>40</y>
+        <width>256</width>
+        <height>421</height>
+       </rect>
+      </property>
+     </widget>
+     <widget class="QLineEdit" name="txt_filter_channels">
+      <property name="geometry">
+       <rect>
+        <x>682</x>
+        <y>10</y>
+        <width>141</width>
+        <height>25</height>
+       </rect>
+      </property>
+     </widget>
+     <widget class="QLabel" name="lbl_groups">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>15</y>
+        <width>121</width>
+        <height>16</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Groups</string>
+      </property>
+     </widget>
+     <widget class="QListWidget" name="list_categ_1">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>40</y>
+        <width>256</width>
+        <height>421</height>
+       </rect>
+      </property>
+     </widget>
+     <widget class="QLineEdit" name="txt_filter_groups">
+      <property name="geometry">
+       <rect>
+        <x>120</x>
+        <y>10</y>
+        <width>141</width>
+        <height>25</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>8</pointsize>
+       </font>
+      </property>
+     </widget>
+     <widget class="QLabel" name="lbl_wait">
+      <property name="geometry">
+       <rect>
+        <x>270</x>
+        <y>120</y>
+        <width>301</width>
+        <height>241</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>28</pointsize>
+       </font>
+      </property>
+      <property name="frameShape">
+       <enum>QFrame::NoFrame</enum>
+      </property>
+      <property name="text">
+       <string>LOADING...</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignCenter</set>
+      </property>
+     </widget>
+    </widget>
+    <widget class="QWidget" name="tab_2">
+     <attribute name="title">
+      <string>VOD</string>
+     </attribute>
+     <widget class="QLineEdit" name="txt_filter_channels_vod">
+      <property name="geometry">
+       <rect>
+        <x>392</x>
+        <y>10</y>
+        <width>141</width>
+        <height>25</height>
+       </rect>
+      </property>
+     </widget>
+     <widget class="QLineEdit" name="txt_filter_groups_vod">
+      <property name="geometry">
+       <rect>
+        <x>120</x>
+        <y>10</y>
+        <width>141</width>
+        <height>25</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>8</pointsize>
+       </font>
+      </property>
+     </widget>
+     <widget class="QListWidget" name="list_categ_vod">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>40</y>
+        <width>256</width>
+        <height>471</height>
+       </rect>
+      </property>
+     </widget>
+     <widget class="QListWidget" name="list_channels_vod">
+      <property name="geometry">
+       <rect>
+        <x>280</x>
+        <y>40</y>
+        <width>256</width>
+        <height>471</height>
+       </rect>
+      </property>
+     </widget>
+     <widget class="QLabel" name="lbl_channels_vod">
+      <property name="geometry">
+       <rect>
+        <x>280</x>
+        <y>15</y>
+        <width>121</width>
+        <height>16</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Videos</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="lbl_groups_vod">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>15</y>
+        <width>121</width>
+        <height>16</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Groups</string>
+      </property>
+     </widget>
+    </widget>
+    <widget class="QWidget" name="tab_3">
+     <attribute name="title">
+      <string>Series</string>
+     </attribute>
+     <widget class="QLabel" name="lbl_channels_series">
+      <property name="geometry">
+       <rect>
+        <x>288</x>
+        <y>15</y>
+        <width>121</width>
+        <height>16</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Series</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="lbl_groups_series">
+      <property name="geometry">
+       <rect>
+        <x>18</x>
+        <y>15</y>
+        <width>121</width>
+        <height>16</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Groups</string>
+      </property>
+     </widget>
+     <widget class="QLineEdit" name="txt_filter_groups_series">
+      <property name="geometry">
+       <rect>
+        <x>128</x>
+        <y>10</y>
+        <width>141</width>
+        <height>25</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>8</pointsize>
+       </font>
+      </property>
+     </widget>
+     <widget class="QListWidget" name="list_channels_series">
+      <property name="geometry">
+       <rect>
+        <x>288</x>
+        <y>40</y>
+        <width>256</width>
+        <height>471</height>
+       </rect>
+      </property>
+     </widget>
+     <widget class="QListWidget" name="list_categ_series">
+      <property name="geometry">
+       <rect>
+        <x>18</x>
+        <y>40</y>
+        <width>256</width>
+        <height>471</height>
+       </rect>
+      </property>
+     </widget>
+     <widget class="QLineEdit" name="txt_filter_channels_series">
+      <property name="geometry">
+       <rect>
+        <x>400</x>
+        <y>10</y>
+        <width>141</width>
+        <height>25</height>
+       </rect>
+      </property>
+     </widget>
+     <widget class="QListWidget" name="list_episodes">
+      <property name="geometry">
+       <rect>
+        <x>560</x>
+        <y>40</y>
+        <width>256</width>
+        <height>471</height>
+       </rect>
+      </property>
+     </widget>
+    </widget>
    </widget>
    <widget class="QLineEdit" name="txt_url">
     <property name="enabled">
@@ -172,8 +424,8 @@
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>470</y>
-      <width>711</width>
+      <y>590</y>
+      <width>731</width>
       <height>25</height>
      </rect>
     </property>
@@ -181,90 +433,18 @@
      <bool>true</bool>
     </property>
    </widget>
-   <widget class="QFrame" name="frm_catchup">
+   <widget class="QPushButton" name="btn_watch">
     <property name="geometry">
      <rect>
-      <x>10</x>
-      <y>510</y>
-      <width>821</width>
-      <height>51</height>
+      <x>750</x>
+      <y>590</y>
+      <width>93</width>
+      <height>25</height>
      </rect>
     </property>
-    <property name="frameShape">
-     <enum>QFrame::StyledPanel</enum>
+    <property name="text">
+     <string>Watch</string>
     </property>
-    <property name="frameShadow">
-     <enum>QFrame::Raised</enum>
-    </property>
-    <widget class="QTimeEdit" name="time_start">
-     <property name="geometry">
-      <rect>
-       <x>250</x>
-       <y>0</y>
-       <width>71</width>
-       <height>22</height>
-      </rect>
-     </property>
-    </widget>
-    <widget class="QCheckBox" name="chk_catchup">
-     <property name="geometry">
-      <rect>
-       <x>0</x>
-       <y>0</y>
-       <width>121</width>
-       <height>20</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>Catch up replay</string>
-     </property>
-    </widget>
-    <widget class="QDateEdit" name="date_start">
-     <property name="geometry">
-      <rect>
-       <x>130</x>
-       <y>0</y>
-       <width>110</width>
-       <height>22</height>
-      </rect>
-     </property>
-     <property name="displayFormat">
-      <string>yyyy-MM-dd</string>
-     </property>
-    </widget>
-    <widget class="QLabel" name="lbl_catchup">
-     <property name="geometry">
-      <rect>
-       <x>0</x>
-       <y>30</y>
-       <width>311</width>
-       <height>16</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>No catchup available</string>
-     </property>
-    </widget>
-    <widget class="QComboBox" name="cmb_epg">
-     <property name="geometry">
-      <rect>
-       <x>410</x>
-       <y>0</y>
-       <width>401</width>
-       <height>22</height>
-      </rect>
-     </property>
-    </widget>
-    <widget class="QLineEdit" name="txt_duration">
-     <property name="geometry">
-      <rect>
-       <x>330</x>
-       <y>0</y>
-       <width>51</width>
-       <height>22</height>
-      </rect>
-     </property>
-    </widget>
    </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
@@ -272,7 +452,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>847</width>
+     <width>864</width>
      <height>26</height>
     </rect>
    </property>
