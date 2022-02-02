@@ -221,6 +221,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.action_Preferences.triggered.connect(self.preferences)
         self.btn_watch.clicked.connect(self.watch)
         self.txt_url.textChanged.connect(self.url_changed)
+        self.tab_main.currentChanged.connect(self.tab_changed)
 
         # Live
         self.list_categ_1.itemSelectionChanged.connect(self.select_group)
@@ -245,7 +246,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         # Series
         self.list_categ_series.itemSelectionChanged.connect(self.select_group_series)
-        self.list_channels_series.itemSelectionChanged.connect(self.select_channel_series)
+        self.list_channels_series.itemSelectionChanged.connect(
+            self.select_channel_series
+        )
         self.list_episodes.itemSelectionChanged.connect(self.select_episode)
         self.list_episodes.doubleClicked.connect(self.watch)
         self.txt_filter_groups_series.textChanged.connect(self.update_groups_series)
@@ -423,7 +426,16 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             if latest_version == self.version:
                 return " (latest)"
             else:
-                return f" ({latest} available)"
+                return f" ({latest_version} available)"
+
+    def tab_changed(self):
+        self.txt_url.setText("")
+        if self.tab_main.currentIndex() == 0 and self.list_channels.currentItem():
+            self.select_channel()
+        if self.tab_main.currentIndex() == 1 and self.list_channels_vod.currentItem():
+            self.select_channel_vod()
+        if self.tab_main.currentIndex() == 2 and self.list_channels_series.currentItem():
+            self.select_episode()
 
     def update_groups(self):
         """Update the list "groups" with available / filtered elements."""
@@ -635,7 +647,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 for channel in self.pl.vod[categ_vod]["OTHERS"]:
                     if fltr.lower() in channel.lower():
                         self.list_channels_vod.addItem(channel)
-                        self.current_channels_vod[channel] = self.pl.vod[categ_vod]["OTHERS"][channel]
+                        self.current_channels_vod[channel] = self.pl.vod[categ_vod][
+                            "OTHERS"
+                        ][channel]
         self.lbl_channels_vod.setText(f"Videos ({self.list_channels_vod.count()})")
 
     def select_channel_vod(self):
@@ -649,9 +663,15 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             url_image = self.pl.vod_details[url]["stream_icon"]
             image = QImage()
             image.loadFromData(requests.get(url_image).content)
-            self.picture_vod.setPixmap(QPixmap(image).scaled(self.picture_vod.width(), self.picture_vod.height(), Qt.KeepAspectRatio, Qt.SmoothTransformation))
+            self.picture_vod.setPixmap(
+                QPixmap(image).scaled(
+                    self.picture_vod.width(),
+                    self.picture_vod.height(),
+                    Qt.KeepAspectRatio,
+                    Qt.SmoothTransformation,
+                )
+            )
         self.hide_loader()
-
 
     def select_group_series(self):
         """When a group is selected."""
@@ -686,10 +706,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 for channel in self.pl.series[categ_series]["OTHERS"]:
                     if fltr.lower() in channel.lower():
                         self.list_channels_series.addItem(channel)
-                        self.current_channels_series[channel] = self.pl.series[categ_series]["OTHERS"][channel]
+                        self.current_channels_series[channel] = self.pl.series[
+                            categ_series
+                        ]["OTHERS"][channel]
         self.list_episodes.setCurrentItem(None)
         self.list_episodes.clear()
-        self.lbl_channels_series.setText(f"Videos ({self.list_channels_series.count()})")
+        self.lbl_channels_series.setText(
+            f"Videos ({self.list_channels_series.count()})"
+        )
 
     def select_channel_series(self):
         """When a channel is selected."""
@@ -704,7 +728,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             for e in self.current_episodes:
                 self.list_episodes.addItem(e)
         self.hide_loader()
-        
+
     def select_episode(self):
         """When an episode is selected."""
         self.show_loader()
@@ -713,7 +737,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             url = self.current_episodes[ep]
             self.txt_url.setText(url)
         self.hide_loader()
-
 
     def watch(self):
         """ "Launch player with correct parameters."""
