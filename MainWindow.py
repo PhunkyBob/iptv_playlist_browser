@@ -86,40 +86,22 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             config.read(self.config_file, encoding="utf-8")
             if "PREFERENCES" in config and "remember_latest" in config["PREFERENCES"]:
                 self.config_remember = config["PREFERENCES"]["remember_latest"]
-                self.config_remember = (
-                    False
-                    if self.config_remember.lower() in ("0", "", "n", "no", "false")
-                    else True
-                )
+                self.config_remember = False if self.config_remember.lower() in ("0", "", "n", "no", "false") else True
             if "PREFERENCES" in config and "player" in config["PREFERENCES"]:
                 self.config_player = config["PREFERENCES"]["player"]
             if "PREFERENCES" in config and "player_params" in config["PREFERENCES"]:
                 self.config_player_params = config["PREFERENCES"]["player_params"]
-            if (
-                "PREFERENCES" in config
-                and "playlist_group_separator" in config["PREFERENCES"]
-            ):
+            if "PREFERENCES" in config and "playlist_group_separator" in config["PREFERENCES"]:
                 self.config_sep_1 = config["PREFERENCES"]["playlist_group_separator"]
-            if (
-                "PREFERENCES" in config
-                and "playlist_categ_separator" in config["PREFERENCES"]
-            ):
+            if "PREFERENCES" in config and "playlist_categ_separator" in config["PREFERENCES"]:
                 self.config_sep_2 = config["PREFERENCES"]["playlist_categ_separator"]
             if "PREFERENCES" in config and "try_xtream_code" in config["PREFERENCES"]:
                 self.config_try_xtream_code = config["PREFERENCES"]["try_xtream_code"]
                 self.config_try_xtream_code = (
-                    False
-                    if self.config_try_xtream_code.lower()
-                    in ("0", "", "n", "no", "false")
-                    else True
+                    False if self.config_try_xtream_code.lower() in ("0", "", "n", "no", "false") else True
                 )
-            if (
-                "PREFERENCES" in config
-                and "catchup_add_minutes" in config["PREFERENCES"]
-            ):
-                self.config_add_minutes = int(
-                    config["PREFERENCES"]["catchup_add_minutes"]
-                )
+            if "PREFERENCES" in config and "catchup_add_minutes" in config["PREFERENCES"]:
+                self.config_add_minutes = int(config["PREFERENCES"]["catchup_add_minutes"])
             if "XTREAM_CODE" in config and "username" in config["XTREAM_CODE"]:
                 self.latest_username = config["XTREAM_CODE"]["username"]
             if "XTREAM_CODE" in config and "password" in config["XTREAM_CODE"]:
@@ -153,9 +135,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.txt_filter_categories.resize(list_width - 110, 25)
         self.txt_filter_channels.resize(list_width - 110, 25)
         self.frm_catchup.resize(tab_width - 2 * margin, self.frm_catchup.height())
-        self.cmb_epg.resize(
-            self.frm_catchup.width() - 410 - margin, self.cmb_epg.height()
-        )
+        self.cmb_epg.resize(self.frm_catchup.width() - 410 - margin, self.cmb_epg.height())
         self.list_categ_1.move(1 * margin + 0 * list_width, 40)
         self.list_categ_2.move(2 * margin + 1 * list_width, 40)
         self.list_channels.move(3 * margin + 2 * list_width, 40)
@@ -179,9 +159,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.list_channels_vod.move(2 * margin + 1 * list_width, 40)
         self.picture_vod.move(3 * margin + 2 * list_width, 40)
         self.txt_filter_groups_vod.move(self.list_categ_vod.pos().x() + 110, margin)
-        self.txt_filter_channels_vod.move(
-            self.list_channels_vod.pos().x() + 110, margin
-        )
+        self.txt_filter_channels_vod.move(self.list_channels_vod.pos().x() + 110, margin)
         self.lbl_groups_vod.move(self.list_categ_vod.pos().x(), 15)
         self.lbl_channels_vod.move(self.list_channels_vod.pos().x(), 15)
 
@@ -195,21 +173,15 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.list_categ_series.move(1 * margin + 0 * list_width, 40)
         self.list_channels_series.move(2 * margin + 1 * list_width, 40)
         self.list_episodes.move(3 * margin + 2 * list_width, 40)
-        self.txt_filter_groups_series.move(
-            self.list_categ_series.pos().x() + 110, margin
-        )
-        self.txt_filter_channels_series.move(
-            self.list_channels_series.pos().x() + 110, margin
-        )
+        self.txt_filter_groups_series.move(self.list_categ_series.pos().x() + 110, margin)
+        self.txt_filter_channels_series.move(self.list_channels_series.pos().x() + 110, margin)
         self.lbl_groups_series.move(self.list_categ_series.pos().x(), 15)
         self.lbl_channels_series.move(self.list_channels_series.pos().x(), 15)
 
         # Watch
         self.txt_url.resize(tab_width - self.btn_watch.width() - margin, 25)
         self.txt_url.move(margin, tab_height + 2 * margin)
-        self.btn_watch.move(
-            self.width() - self.btn_watch.width() - margin, tab_height + 2 * margin
-        )
+        self.btn_watch.move(self.width() - self.btn_watch.width() - margin, tab_height + 2 * margin)
 
     def connect_signals_slots(self):
         """Link elements signals to functions."""
@@ -246,9 +218,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         # Series
         self.list_categ_series.itemSelectionChanged.connect(self.select_group_series)
-        self.list_channels_series.itemSelectionChanged.connect(
-            self.select_channel_series
-        )
+        self.list_channels_series.itemSelectionChanged.connect(self.select_channel_series)
         self.list_episodes.itemSelectionChanged.connect(self.select_episode)
         self.list_episodes.doubleClicked.connect(self.watch)
         self.txt_filter_groups_series.textChanged.connect(self.update_groups_series)
@@ -477,10 +447,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.list_categ_2.clear()
         if self.current_categ_1:
             for categ_2 in self.pl.channels[self.current_categ_1]:
-                if (
-                    fltr.lower() in categ_2.lower()
-                    and len(self.pl.channels[self.current_categ_1][categ_2]) > 0
-                ):
+                if fltr.lower() in categ_2.lower() and len(self.pl.channels[self.current_categ_1][categ_2]) > 0:
                     self.list_categ_2.addItem(categ_2)
         self.lbl_categories.setText(f"Categories ({self.list_categ_2.count()})")
 
@@ -495,9 +462,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             for channel in self.pl.channels[self.current_categ_1][self.current_categ_2]:
                 if fltr.lower() in channel.lower():
                     self.list_channels.addItem(channel)
-                    self.current_channels[channel] = self.pl.channels[
-                        self.current_categ_1
-                    ][self.current_categ_2][channel]
+                    self.current_channels[channel] = self.pl.channels[self.current_categ_1][self.current_categ_2][
+                        channel
+                    ]
         else:
             # If no category is selected, display all available channels.
             for i in range(self.list_categ_2.count()):
@@ -505,9 +472,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 for channel in self.pl.channels[self.current_categ_1][categ_2]:
                     if fltr.lower() in channel.lower():
                         self.list_channels.addItem(channel)
-                        self.current_channels[channel] = self.pl.channels[
-                            self.current_categ_1
-                        ][categ_2][channel]
+                        self.current_channels[channel] = self.pl.channels[self.current_categ_1][categ_2][channel]
         self.lbl_channels.setText(f"Channels ({self.list_channels.count()})")
 
     def select_group(self):
@@ -551,10 +516,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             # Enable / disable catchup
             self.block_epg_enable(False)
             self.lbl_catchup.setText("No catchup available")
-            if (
-                url in self.pl.channels_details
-                and self.pl.channels_details[url]["tv_archive"]
-            ):
+            if url in self.pl.channels_details and self.pl.channels_details[url]["tv_archive"]:
                 self.block_epg_enable(True)
                 self.lbl_catchup.setText(f"Catchup available")
                 if self.pl.channels_details[url]["stream_id"]:
@@ -596,17 +558,16 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         """Update the EPG for current channel and add elements in the list."""
         self.pl.update_epg(stream)
         self.cmb_epg.clear()
-        self.cmb_epg.addItem("...")
-        for elem in reversed(sorted(self.pl.channels_epg[stream].keys())):
-            self.cmb_epg.addItem(elem, self.pl.channels_epg[stream][elem])
+        if stream in self.pl.channels_epg:
+            self.cmb_epg.addItem("...")
+            for elem in reversed(sorted(self.pl.channels_epg[stream].keys())):
+                self.cmb_epg.addItem(elem, self.pl.channels_epg[stream][elem])
 
     def select_epg(self):
         """When user selects a program in EPG, update the catchup settings."""
         item = self.cmb_epg.currentData()
         if item:
-            self.date_start.setDate(
-                QtCore.QDate.fromString(item["start_date"], QtCore.Qt.ISODate)
-            )
+            self.date_start.setDate(QtCore.QDate.fromString(item["start_date"], QtCore.Qt.ISODate))
             self.time_start.setTime(QtCore.QTime.fromString(item["start_time"]))
             self.txt_duration.setText(str(item["duration"] + self.config_add_minutes))
             self.change_catchup_settings()
@@ -637,9 +598,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             for channel in self.pl.vod[self.current_categ_vod]["OTHERS"]:
                 if fltr.lower() in channel.lower():
                     self.list_channels_vod.addItem(channel)
-                    self.current_channels_vod[channel] = self.pl.vod[
-                        self.current_categ_vod
-                    ]["OTHERS"][channel]
+                    self.current_channels_vod[channel] = self.pl.vod[self.current_categ_vod]["OTHERS"][channel]
         else:
             # If no category is selected, display all available channels.
             for i in range(self.list_categ_vod.count()):
@@ -647,9 +606,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 for channel in self.pl.vod[categ_vod]["OTHERS"]:
                     if fltr.lower() in channel.lower():
                         self.list_channels_vod.addItem(channel)
-                        self.current_channels_vod[channel] = self.pl.vod[categ_vod][
-                            "OTHERS"
-                        ][channel]
+                        self.current_channels_vod[channel] = self.pl.vod[categ_vod]["OTHERS"][channel]
         self.lbl_channels_vod.setText(f"Videos ({self.list_channels_vod.count()})")
 
     def select_channel_vod(self):
@@ -696,9 +653,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             for channel in self.pl.series[self.current_categ_series]["OTHERS"]:
                 if fltr.lower() in channel.lower():
                     self.list_channels_series.addItem(channel)
-                    self.current_channels_series[channel] = self.pl.series[
-                        self.current_categ_series
-                    ]["OTHERS"][channel]
+                    self.current_channels_series[channel] = self.pl.series[self.current_categ_series]["OTHERS"][
+                        channel
+                    ]
         else:
             # If no category is selected, display all available channels.
             for i in range(self.list_categ_series.count()):
@@ -706,14 +663,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 for channel in self.pl.series[categ_series]["OTHERS"]:
                     if fltr.lower() in channel.lower():
                         self.list_channels_series.addItem(channel)
-                        self.current_channels_series[channel] = self.pl.series[
-                            categ_series
-                        ]["OTHERS"][channel]
+                        self.current_channels_series[channel] = self.pl.series[categ_series]["OTHERS"][channel]
         self.list_episodes.setCurrentItem(None)
         self.list_episodes.clear()
-        self.lbl_channels_series.setText(
-            f"Videos ({self.list_channels_series.count()})"
-        )
+        self.lbl_channels_series.setText(f"Videos ({self.list_channels_series.count()})")
 
     def select_channel_series(self):
         """When a channel is selected."""
