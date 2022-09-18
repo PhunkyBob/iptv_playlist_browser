@@ -131,11 +131,10 @@ Note that not all providers gives this functionality.
 
 ### Install
 In a command line editor: 
+
 ```
 git clone https://github.com/PhunkyBob/iptv_playlist_browser.git
 cd iptv_playlist_browser
-python -m venv env
-env\Scripts\activate.bat
-pip install -U pip
-pip install -r requirements.txt
+poetry env use system
+poetry install
 ```

@@ -3,26 +3,27 @@
 This class allows to display the main application window.
 """
 
-from PyQt5.QtWidgets import QMainWindow, QMessageBox
-from PyQt5.QtGui import QImage, QPixmap
-from PyQt5.QtCore import Qt
-from main_ui import Ui_MainWindow
-from PyQt5.uic import loadUi
-from playlist import Playlist
-import subprocess
-import psutil
-from PyQt5 import QtCore, QtGui
-from datetime import datetime
 import configparser
 import os
-from OpenPreferences import OpenPreferences
+import subprocess
+from datetime import datetime
+
+import psutil
+import requests
+import requests_random_user_agent  # noqa
+from PyQt5 import QtCore, QtGui
+from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QImage, QPixmap
+from PyQt5.QtWidgets import QMainWindow, QMessageBox
+from PyQt5.uic import loadUi
+
 from OpenLocalFile import OpenLocalFile
+from OpenPreferences import OpenPreferences
 from OpenRemoteFile import OpenRemoteFile
 from OpenXtream import OpenXtream
-import requests
-import tools
-
-margin = 10
+from constant import BASE_DIR, MARGIN
+from main_ui import Ui_MainWindow
+from playlist import Playlist
 
 
 class MainWindow(QMainWindow, Ui_MainWindow):
@@ -60,13 +61,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def __init__(self, parent=None, version="unkwnown"):
         super().__init__(parent)
-        loadUi(tools.resource_path("ui/main_ui.ui"), self)
+
+        loadUi(f"{BASE_DIR}/ui/main_ui.ui", self)
         # self.setupUi(self)
         self.connect_signals_slots()
         self.pl = None
-        self.lbl_wait.hide()
         now = datetime.now()
         self.version = version
+        self.statusbar.showMessage(f"Version: {self.version}", 5000)
 
         # Set default values
         self.setWindowTitle(f"{self.main_title}")
@@ -122,10 +124,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def resizeEvent(self, *args):
         """Resize and move all elements when window is resized."""
         QMainWindow.resizeEvent(self, *args)
-        tab_width = int(self.width() - 2 * margin)
+        tab_width = int(self.width() - 2 * MARGIN)
         tab_height = int(self.height() - 140)
         self.tab_main.resize(tab_width, tab_height)
-        list_width = int((tab_width - 4 * margin) / 3)
+        list_width = int((tab_width - 4 * MARGIN) / 3)
         # Live
         list_height = tab_height - 140
         self.list_categ_1.resize(list_width, list_height)
@@ -134,16 +136,16 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.txt_filter_groups.resize(list_width - 110, 25)
         self.txt_filter_categories.resize(list_width - 110, 25)
         self.txt_filter_channels.resize(list_width - 110, 25)
-        self.frm_catchup.resize(tab_width - 2 * margin, self.frm_catchup.height())
-        self.cmb_epg.resize(self.frm_catchup.width() - 410 - margin, self.cmb_epg.height())
-        self.list_categ_1.move(1 * margin + 0 * list_width, 40)
-        self.list_categ_2.move(2 * margin + 1 * list_width, 40)
-        self.list_channels.move(3 * margin + 2 * list_width, 40)
-        self.txt_filter_groups.move(self.list_categ_1.pos().x() + 110, margin)
-        self.txt_filter_categories.move(self.list_categ_2.pos().x() + 110, margin)
-        self.txt_filter_channels.move(self.list_channels.pos().x() + 110, margin)
+        self.frm_catchup.resize(tab_width - 2 * MARGIN, self.frm_catchup.height())
+        self.cmb_epg.resize(self.frm_catchup.width() - 410 - MARGIN, self.cmb_epg.height())
+        self.list_categ_1.move(1 * MARGIN + 0 * list_width, 40)
+        self.list_categ_2.move(2 * MARGIN + 1 * list_width, 40)
+        self.list_channels.move(3 * MARGIN + 2 * list_width, 40)
+        self.txt_filter_groups.move(self.list_categ_1.pos().x() + 110, MARGIN)
+        self.txt_filter_categories.move(self.list_categ_2.pos().x() + 110, MARGIN)
+        self.txt_filter_channels.move(self.list_channels.pos().x() + 110, MARGIN)
 
-        self.frm_catchup.move(margin, 40 + list_height + 2 * margin)
+        self.frm_catchup.move(MARGIN, 40 + list_height + 2 * MARGIN)
         self.lbl_groups.move(self.list_categ_1.pos().x(), 15)
         self.lbl_categories.move(self.list_categ_2.pos().x(), 15)
         self.lbl_channels.move(self.list_channels.pos().x(), 15)
@@ -155,11 +157,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.picture_vod.resize(list_width, list_height)
         self.txt_filter_groups_vod.resize(list_width - 110, 25)
         self.txt_filter_channels_vod.resize(list_width - 110, 25)
-        self.list_categ_vod.move(1 * margin + 0 * list_width, 40)
-        self.list_channels_vod.move(2 * margin + 1 * list_width, 40)
-        self.picture_vod.move(3 * margin + 2 * list_width, 40)
-        self.txt_filter_groups_vod.move(self.list_categ_vod.pos().x() + 110, margin)
-        self.txt_filter_channels_vod.move(self.list_channels_vod.pos().x() + 110, margin)
+        self.list_categ_vod.move(1 * MARGIN + 0 * list_width, 40)
+        self.list_channels_vod.move(2 * MARGIN + 1 * list_width, 40)
+        self.picture_vod.move(3 * MARGIN + 2 * list_width, 40)
+        self.txt_filter_groups_vod.move(self.list_categ_vod.pos().x() + 110, MARGIN)
+        self.txt_filter_channels_vod.move(self.list_channels_vod.pos().x() + 110, MARGIN)
         self.lbl_groups_vod.move(self.list_categ_vod.pos().x(), 15)
         self.lbl_channels_vod.move(self.list_channels_vod.pos().x(), 15)
 
@@ -170,18 +172,18 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.list_episodes.resize(list_width, list_height)
         self.txt_filter_groups_series.resize(list_width - 110, 25)
         self.txt_filter_channels_series.resize(list_width - 110, 25)
-        self.list_categ_series.move(1 * margin + 0 * list_width, 40)
-        self.list_channels_series.move(2 * margin + 1 * list_width, 40)
-        self.list_episodes.move(3 * margin + 2 * list_width, 40)
-        self.txt_filter_groups_series.move(self.list_categ_series.pos().x() + 110, margin)
-        self.txt_filter_channels_series.move(self.list_channels_series.pos().x() + 110, margin)
+        self.list_categ_series.move(1 * MARGIN + 0 * list_width, 40)
+        self.list_channels_series.move(2 * MARGIN + 1 * list_width, 40)
+        self.list_episodes.move(3 * MARGIN + 2 * list_width, 40)
+        self.txt_filter_groups_series.move(self.list_categ_series.pos().x() + 110, MARGIN)
+        self.txt_filter_channels_series.move(self.list_channels_series.pos().x() + 110, MARGIN)
         self.lbl_groups_series.move(self.list_categ_series.pos().x(), 15)
         self.lbl_channels_series.move(self.list_channels_series.pos().x(), 15)
 
         # Watch
-        self.txt_url.resize(tab_width - self.btn_watch.width() - margin, 25)
-        self.txt_url.move(margin, tab_height + 2 * margin)
-        self.btn_watch.move(self.width() - self.btn_watch.width() - margin, tab_height + 2 * margin)
+        self.txt_url.resize(tab_width - self.btn_watch.width() - MARGIN, 25)
+        self.txt_url.move(MARGIN, tab_height + 2 * MARGIN)
+        self.btn_watch.move(self.width() - self.btn_watch.width() - MARGIN, tab_height + 2 * MARGIN)
 
     def connect_signals_slots(self):
         """Link elements signals to functions."""
@@ -237,6 +239,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.config_add_minutes,
         )
         dialog.exec()
+        self.statusbar.showMessage("Preferences saved", 5000)
         if dialog.validated:
             # Dialog closed with "OK" --> save parameters
             self.config_player = dialog.player
@@ -258,6 +261,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.config_sep_2,
         )
         dialog.exec()
+        self.statusbar.showMessage("Local file opened", 5000)
         if dialog.remember and dialog.url:
             self.latest_local = dialog.url
             self.save_config()
@@ -309,17 +313,17 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             )
 
     def open_file(
-        self,
-        server="",
-        username="",
-        password="",
-        filename="",
-        try_xtream=True,
-        sep_lvl1="▼---",
-        sep_lvl2="---●★",
+            self,
+            server="",
+            username="",
+            password="",
+            filename="",
+            try_xtream=True,
+            sep_lvl1="▼---",
+            sep_lvl2="---●★",
     ):
         """Get the playlist from the file or the Xtream credentials."""
-        self.show_loader()
+        self.statusbar.showMessage("Please Wait, get playlist...")
         # Update title window.
         if filename:
             self.setWindowTitle(f"{self.main_title} - {filename}")
@@ -358,11 +362,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.chk_catchup.setEnabled(False)
             self.date_start.setEnabled(False)
             self.time_start.setEnabled(False)
+            self.statusbar.showMessage("Playlist loaded.")
         else:
             self.chk_catchup.setEnabled(True)
             self.date_start.setEnabled(True)
             self.time_start.setEnabled(True)
-        self.hide_loader()
+            if self.pl.api_account:
+                message = f"""Username: {self.pl.api_account['user_info']['username']} , Status: {self.pl.api_account['user_info']['status']}, Expiration: {datetime.fromtimestamp(int(self.pl.api_account['user_info']['exp_date']))}, Active Connections: {self.pl.api_account['user_info']['active_cons']}, Max Connections: {self.pl.api_account['user_info']['max_connections']}"""
+                self.statusbar.showMessage(f"{message}")
 
     def about(self):
         """Open "about" dialog."""
@@ -477,7 +484,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def select_group(self):
         """When a group is selected."""
-        self.show_loader()
+        self.statusbar.showMessage("Get live channel groups...")
         self.current_categ_1 = ""
         if self.list_categ_1.currentItem():
             self.current_categ_1 = self.list_categ_1.currentItem().text()
@@ -486,11 +493,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.list_categ_2.clear()
         self.update_categories()
         self.update_channels()
-        self.hide_loader()
+        self.statusbar.showMessage("Live channel groups loaded.")
 
     def select_category(self):
         """When a category is selected."""
-        self.show_loader()
+        self.statusbar.showMessage("Get categories...")
         self.list_channels.setCurrentItem(None)
         self.list_channels.clear()
         self.txt_url.setText("")
@@ -498,7 +505,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.current_categ_2 = self.list_categ_2.currentItem().text()
             # print(self.current_categ_2)
             self.update_channels()
-        self.hide_loader()
+        self.statusbar.showMessage("Categories loaded.")
 
     def block_epg_enable(self, status):
         self.chk_catchup.setEnabled(status)
@@ -509,7 +516,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def select_channel(self):
         """When a channel is selected."""
-        self.show_loader()
+        self.statusbar.showMessage("Get channel info...")
         if self.list_channels.currentItem():
             channel = self.list_channels.currentItem().text()
             url = self.current_channels[channel]
@@ -527,7 +534,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 self.cmb_epg.clear()
 
             self.change_catchup_settings()
-        self.hide_loader()
+        self.statusbar.showMessage("Channels loaded.")
 
     def change_catchup_settings(self):
         """Decide what URL should be displayed between live and catchup."""
@@ -574,7 +581,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def select_group_vod(self):
         """When a group is selected."""
-        self.show_loader()
+        self.statusbar.showMessage("Get VOD's groups...")
         self.list_channels_vod.setCurrentItem(None)
         self.list_channels_vod.clear()
         self.current_categ_vod = ""
@@ -584,7 +591,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.current_categ_vod = self.list_categ_vod.currentItem().text()
             # print(self.current_categ_2)
             self.update_channels_vod()
-        self.hide_loader()
+        self.statusbar.showMessage("VOD's groups loaded.")
 
     def update_channels_vod(self):
         """Update the list "channels" with available / filtered elements."""
@@ -611,7 +618,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def select_channel_vod(self):
         """When a channel is selected."""
-        self.show_loader()
+        self.statusbar.showMessage("Get VOD's details...")
         if self.list_channels_vod.currentItem():
             channel = self.list_channels_vod.currentItem().text()
             url = self.current_channels_vod[channel]
@@ -628,11 +635,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                     Qt.SmoothTransformation,
                 )
             )
-        self.hide_loader()
+        self.statusbar.showMessage("VOD's details loaded.")
 
     def select_group_series(self):
         """When a group is selected."""
-        self.show_loader()
+        self.statusbar.showMessage("Get series...")
         self.list_channels_series.setCurrentItem(None)
         self.list_channels_series.clear()
         self.current_categ_series = ""
@@ -640,7 +647,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.current_categ_series = self.list_categ_series.currentItem().text()
             # print(self.current_categ_2)
             self.update_channels_series()
-        self.hide_loader()
+        self.statusbar.showMessage("Series loaded.")
 
     def update_channels_series(self):
         """Update the list "channels" with available / filtered elements."""
@@ -670,7 +677,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def select_channel_series(self):
         """When a channel is selected."""
-        self.show_loader()
+        self.statusbar.showMessage("Get episodes...")
         self.txt_url.setText("")
         if self.list_channels_series.currentItem():
             channel = self.list_channels_series.currentItem().text()
@@ -680,16 +687,16 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.list_episodes.clear()
             for e in self.current_episodes:
                 self.list_episodes.addItem(e)
-        self.hide_loader()
+        self.statusbar.showMessage("Episodes loaded.")
 
     def select_episode(self):
         """When an episode is selected."""
-        self.show_loader()
+        self.statusbar.showMessage("Get episode details...")
         if self.list_episodes.currentItem():
             ep = self.list_episodes.currentItem().text()
             url = self.current_episodes[ep]
             self.txt_url.setText(url)
-        self.hide_loader()
+        self.statusbar.showMessage("Get episode details loaded.")
 
     def watch(self):
         """ "Launch player with correct parameters."""
@@ -709,18 +716,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # Create a new process in a separated thread
         self.player_process = subprocess.Popen(
             [self.config_player, url.replace("&", "^&"), self.config_player_params],
-            shell=True,
+            shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE
         )
-
-    def show_loader(self):
-        """Display the loader."""
-        self.lbl_wait.show()
-        self.lbl_wait.repaint()
-
-    def hide_loader(self):
-        """Hide the loader."""
-        self.lbl_wait.hide()
-        self.lbl_wait.repaint()
 
     def save_config(self):
         """Save the current parameters to a config file."""

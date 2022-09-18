@@ -1,9 +1,0 @@
-certifi==2021.10.8
-charset-normalizer==2.0.7
-idna==3.3
-psutil==5.8.0
-PyQt5==5.15.6
-PyQt5-Qt5==5.15.2
-PyQt5-sip==12.9.0
-requests==2.26.0
-urllib3==1.26.7

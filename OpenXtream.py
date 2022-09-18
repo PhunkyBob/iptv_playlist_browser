@@ -3,12 +3,12 @@
 This class allows to display the "Open Xtream Code" dialog box.
 """
 
+from PyQt5 import QtCore
 from PyQt5.QtWidgets import QDialog
 from PyQt5.uic import loadUi
-from PyQt5 import QtCore
-import tools
 
-margin = 10
+from constant import BASE_DIR, MARGIN
+
 
 class OpenXtream(QDialog):
     username: str = ""
@@ -17,15 +17,18 @@ class OpenXtream(QDialog):
     remember: bool = False
 
     def __init__(
-        self, parent=None, username="", password="", server="", remember=False
+            self, parent=None, username="", password="", server="", remember=False
     ):
         super().__init__(parent)
-        loadUi(tools.resource_path("ui/xtream_code.ui"), self)
+        loadUi(f"{BASE_DIR}/ui/xtream_code.ui", self)
         self.setWindowFlags(self.windowFlags() & ~QtCore.Qt.WindowContextHelpButtonHint)
         self.setMaximumHeight(self.height())
         self.txt_server.setText(server)
+        self.txt_server.setToolTip("Your Xtream Code server URL (ex: http://myserver.com:25461)")
         self.txt_username.setText(username)
+        self.txt_username.setToolTip("Your Xtream Code username")
         self.txt_password.setText(password)
+        self.txt_password.setToolTip("Your Xtream Code password")
         self.chk_save.setChecked(remember)
         self.connect_signals_slots()
         self.verif_fields()
@@ -33,14 +36,14 @@ class OpenXtream(QDialog):
     def resizeEvent(self, *args):
         """ Resize and move all elements when window is resized. """
         QDialog.resizeEvent(self, *args)
-        self.txt_server.resize(self.width() - 110 - margin, 25)
-        self.txt_username.resize(self.width() - 110 - margin, 25)
-        self.txt_password.resize(self.width() - 110 - margin, 25)
+        self.txt_server.resize(self.width() - 110 - MARGIN, 25)
+        self.txt_username.resize(self.width() - 110 - MARGIN, 25)
+        self.txt_password.resize(self.width() - 110 - MARGIN, 25)
         self.btn_ok.move(
-            self.width() - self.btn_ok.width() - self.btn_cancel.width() - 2 * margin,
+            self.width() - self.btn_ok.width() - self.btn_cancel.width() - 2 * MARGIN,
             140,
         )
-        self.btn_cancel.move(self.width() - self.btn_cancel.width() - 1 * margin, 140)
+        self.btn_cancel.move(self.width() - self.btn_cancel.width() - 1 * MARGIN, 140)
 
     def connect_signals_slots(self):
         """ Link elements signals to functions. """
@@ -64,4 +67,6 @@ class OpenXtream(QDialog):
             len(self.txt_username.text()) > 0
             and len(self.txt_password.text()) > 0
             and len(self.txt_server.text()) > 0
+            and not self.txt_server.text().endswith("/")
+            and self.txt_server.text().startswith("http") or self.txt_server.text().startswith("https")
         )

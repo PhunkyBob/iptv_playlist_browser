@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.2.3 (UNRELEASED)
+- [IMPROVEMENT] user-agent header is set to random value because some websites block requests with default user-agent header
+- [IMPROVEMENT] change loading splash screen to be more informative about what is happening in the background
+- [FIX] fixed bug with wrong file path in case of relative path
+- [REFACTOR] code refactoring and cleanup
+- [REMOVE] removed requirements file because it is not needed anymore (all dependencies are installed with poetry)
+
 ## 1.2.2 (2022-09-14)
 - [BUGFIX] When EPG is not available. 
 

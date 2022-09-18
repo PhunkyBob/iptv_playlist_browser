@@ -3,11 +3,13 @@
 This class manage the conversion of a playlist or Xtream credentials to groups / categories / channels.
 """
 
+import base64
+import json
 import os
 import re
+
 import requests
-import json
-import base64
+import requests_random_user_agent  # noqa
 
 """
 Xtream API
@@ -42,6 +44,7 @@ class Playlist:
     channels = {}
     channels_details = {}
     channels_epg = {}
+    image_urls = {}
     vod = {}
     vod_details = {}
     series = {}
@@ -51,13 +54,13 @@ class Playlist:
     default_category: str = "OTHERS"
 
     def __init__(
-        self, server="", username="", password="", filename="", try_xtream=True, sep_lvl1="▼---", sep_lvl2="---●★"
+            self, server="", username="", password="", filename="", try_xtream=True, sep_lvl1="▼---", sep_lvl2="---●★"
     ) -> None:
         if filename:
             # If the file is remote, download it
             if filename.lower().startswith("http"):
                 response = requests.get(filename)
-                if response.status_code not in (200, 201):
+                if not response.ok:
                     print("[ERROR] Can't download file")
                     return False
 
@@ -102,7 +105,7 @@ class Playlist:
         try:
             # Connect to the API and get global infos
             res = requests.get(f"{server}/player_api.php?username={username}&password={password}")
-            if res.status_code not in (200, 201):
+            if not res.ok:
                 print("[ERROR] Bad credentials...")
                 return False
             self.api_account = json.loads(res.text)
@@ -125,8 +128,7 @@ class Playlist:
 
         return True
 
-    def load_streams(self, server, username, password, type="live", sep_lvl1="", sep_lvl2="---"):
-        current_lvl1 = ""
+    def load_streams(self, server, username, password, type=None, sep_lvl1="", sep_lvl2="---"):
         current_lvl1_previous = ""
         current_lvl2 = ""
         urls = {}
@@ -134,7 +136,7 @@ class Playlist:
         res = requests.get(
             f"{server}/player_api.php?username={username}&password={password}&action=get_{type}_categories"
         )
-        if res.status_code not in (200, 201):
+        if not res.ok:
             print("[ERROR] Bad credentials...")
             return False
         live_categories = json.loads(res.text)
@@ -146,7 +148,7 @@ class Playlist:
         res = requests.get(
             f"{server}/player_api.php?username={username}&password={password}&action=get_{type}{stream_txt}"
         )
-        if res.status_code not in (200, 201):
+        if not res.ok:
             print("[ERROR] Bad credentials...")
             return False
         live_streams = json.loads(res.text)
@@ -180,16 +182,16 @@ class Playlist:
             # Save details for later (EPG).
             urls_details[url] = {}
             for key in (
-                "is_adult",
-                "name",
-                "stream_type",
-                "rating",
-                "epg_channel_id",
-                "tv_archive",
-                "tv_archive_duration",
-                "stream_icon",
-                "stream_id",
-                "direct_source",
+                    "is_adult",
+                    "name",
+                    "stream_type",
+                    "rating",
+                    "epg_channel_id",
+                    "tv_archive",
+                    "tv_archive_duration",
+                    "stream_icon",
+                    "stream_id",
+                    "direct_source",
             ):
                 if key in s:
                     urls_details[url][key] = s[key]
@@ -199,18 +201,13 @@ class Playlist:
     def get_series(self, series_id):
         if self.api_account:
             server = (
-                self.api_account["server_info"]["server_protocol"]
-                + "://"
-                + self.api_account["server_info"]["url"]
-                + ":"
-                + self.api_account["server_info"]["port"]
-            )
+                f"""{self.api_account["server_info"]["server_protocol"]}://{self.api_account["server_info"]["url"]}:{self.api_account["server_info"]["port"]}""")
             username = self.api_account["user_info"]["username"]
             password = self.api_account["user_info"]["password"]
             res = requests.get(
                 f"{server}/player_api.php?username={username}&password={password}&action=get_series_info&series_id={series_id}"
             )
-            if res.status_code not in (200, 201):
+            if not res.ok:
                 print("[ERROR] Bad credentials...")
                 return False
             series = json.loads(res.text)
@@ -305,7 +302,7 @@ class Playlist:
         password = self.api_account["user_info"]["password"]
         url = f"{protocol}://{server}:{port}/player_api.php?username={username}&password={password}&action=get_simple_data_table&stream_id={stream}"
         res = requests.get(url)
-        if res.status_code not in (200, 201):
+        if not res.ok:
             print("[ERROR] Bad credentials...")
             return False
 
@@ -329,8 +326,8 @@ class Playlist:
                 epg["start_date"] = start_date
                 epg["start_time"] = start_time
                 epg["duration"] = duration
-                id = f"[{start_date} {start_time}] {title} ({duration} min)"
-                self.channels_epg[stream][id] = epg
+                _id = f"[{start_date} {start_time}] {title} ({duration} min)"
+                self.channels_epg[stream][_id] = epg
 
     def decode(self, base64_string):
         """Decode strings from the EPG."""

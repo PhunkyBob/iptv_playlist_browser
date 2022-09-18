@@ -3,13 +3,15 @@
 This class allows to display the "Open local file" dialog box.
 """
 
+import os
+
+from PyQt5 import QtCore
 from PyQt5.QtWidgets import QDialog, QFileDialog
 from PyQt5.uic import loadUi
-from PyQt5 import QtCore
-import os
-import tools
 
-margin = 10
+from constant import BASE_DIR
+
+MARGIN = 10
 
 
 class OpenLocalFile(QDialog):
@@ -21,7 +23,7 @@ class OpenLocalFile(QDialog):
 
     def __init__(self, parent=None, url="", remember=False, sep_lvl1="", sep_lvl2=""):
         super().__init__(parent)
-        loadUi(tools.resource_path("ui/local_file.ui"), self)
+        loadUi(f"{BASE_DIR}/ui/local_file.ui", self)
         self.setWindowFlags(self.windowFlags() & ~QtCore.Qt.WindowContextHelpButtonHint)
         self.setMinimumHeight(self.height())
         self.setMaximumHeight(self.height())
@@ -36,17 +38,19 @@ class OpenLocalFile(QDialog):
         """ Resize and move all elements when window is resized. """
         QDialog.resizeEvent(self, *args)
         self.txt_url.resize(
-            self.width() - 50 - self.btn_browse.width() - 2 * margin, 25
+            self.width() - 50 - self.btn_browse.width() - 2 * MARGIN, 25
         )
         self.txt_preview.resize(
-            self.width() - 130 - margin, self.txt_preview.height()
+            self.width() - 130 - MARGIN, self.txt_preview.height()
         )
         self.btn_ok.move(
-            self.width() - self.btn_ok.width() - self.btn_cancel.width() - 2 * margin,
-            self.height() - self.btn_ok.height() - margin,
+            self.width() - self.btn_ok.width() - self.btn_cancel.width() - 2 * MARGIN,
+            self.height() - self.btn_ok.height() - MARGIN,
         )
-        self.btn_cancel.move(self.width() - self.btn_cancel.width() - 1 * margin, self.height() - self.btn_cancel.height() - margin)
-        self.btn_browse.move(self.width() - self.btn_browse.width() - 1 * margin, 20)
+        self.btn_cancel.move(
+            self.width() - self.btn_cancel.width() - 1 * MARGIN, self.height() - self.btn_cancel.height() - MARGIN
+        )
+        self.btn_browse.move(self.width() - self.btn_browse.width() - 1 * MARGIN, 20)
 
     def connect_signals_slots(self):
         """ Link elements signals to functions. """
@@ -105,7 +109,6 @@ class OpenLocalFile(QDialog):
                     continue
                 preview += ','.join(content.split(',')[1:]) + "\n"
                 cnt += 1
-                if  cnt > self.preview_lines:
+                if cnt > self.preview_lines:
                     break
         self.txt_preview.setText(preview + '...')
-

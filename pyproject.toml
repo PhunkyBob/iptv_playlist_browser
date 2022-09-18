@@ -1,0 +1,20 @@
+[tool.poetry]
+name = "iptv-playlist-browser"
+version = "1.02.3"
+description = "Browse your IPTV channels easily."
+authors = ["PhunkyBob", "mertcangokgoz"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+requests = "^2.28.1"
+PyQt5 = "^5.15.7"
+psutil = "^5.9.2"
+charset-normalizer = "^2.1.1"
+requests-random-user-agent = "^2022.9.7"
+validators = "^0.20.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

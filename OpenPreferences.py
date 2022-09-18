@@ -3,11 +3,14 @@
 This class allows to display the "Preferences" dialog box.
 """
 
+import os
+
+from PyQt5 import QtCore, QtGui
 from PyQt5.QtWidgets import QDialog, QFileDialog
 from PyQt5.uic import loadUi
-from PyQt5 import QtCore, QtGui
-import os 
-import tools
+
+from constant import BASE_DIR
+
 
 class OpenPreferences(QDialog):
     remember_latest: bool = True
@@ -21,18 +24,18 @@ class OpenPreferences(QDialog):
     validated: bool = False
 
     def __init__(
-        self,
-        parent=None,
-        player="",
-        player_params="",
-        remember_latest=True,
-        try_xtream_code=True,
-        playlist_group_separator="",
-        playlist_category_separator="",
-        catchup_add_minutes=0
+            self,
+            parent=None,
+            player="",
+            player_params="",
+            remember_latest=True,
+            try_xtream_code=True,
+            playlist_group_separator="",
+            playlist_category_separator="",
+            catchup_add_minutes=0
     ):
         super().__init__(parent)
-        loadUi(tools.resource_path("ui/preferences.ui"), self)
+        loadUi(f"{BASE_DIR}/ui/preferences.ui", self)
         self.setWindowFlags(self.windowFlags() & ~QtCore.Qt.WindowContextHelpButtonHint)
         self.setFixedSize(self.size())
         self.chk_remember.setChecked(remember_latest)
@@ -51,7 +54,6 @@ class OpenPreferences(QDialog):
         self.onlyInt = QtGui.QIntValidator()
         self.txt_catchup_min.setValidator(self.onlyInt)
         self.connect_signals_slots()
-        
 
     def resizeEvent(self, *args):
         """ Resize and move all elements when window is resized. """
@@ -63,7 +65,6 @@ class OpenPreferences(QDialog):
         self.btn_ok.clicked.connect(self.click_ok)
         self.btn_browse_player.clicked.connect(self.open_filename_dialog)
         self.txt_player.textChanged.connect(self.verif_player)
-
 
     def open_filename_dialog(self):
         """ Choose a player binary file. """
@@ -82,8 +83,8 @@ class OpenPreferences(QDialog):
     def click_ok(self):
         """ When button "OK" is clicked, save the values. """
         self.playlist_separator_changed = (
-            self.playlist_group_separator != self.txt_pl_sep_1.text()
-            or self.playlist_category_separator != self.txt_pl_sep_2.text()
+                self.playlist_group_separator != self.txt_pl_sep_1.text()
+                or self.playlist_category_separator != self.txt_pl_sep_2.text()
         )
         self.remember_latest = self.chk_remember.isChecked()
         self.try_xtream_code = self.chk_xtream.isChecked()
