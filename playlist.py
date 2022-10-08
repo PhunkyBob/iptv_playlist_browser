@@ -13,6 +13,10 @@ import requests_random_user_agent  # noqa
 
 """
 Xtream API
+
+# M3u8 playlist
+{server}/get.php?username={username}&password={password}&type=m3u_plus&output=m3u8
+
 # Account
 {server}/player_api.php?username={username}&password={password}
 
@@ -36,7 +40,6 @@ Xtream API
 {server}/player_api.php?username={username}&password={password}&action=get_series
 # Serie infos
 {server}/player_api.php?username={username}&password={password}&action=get_series_info&series_id=X
-
 """
 
 
@@ -127,6 +130,17 @@ class Playlist:
             return False
 
         return True
+
+    def export_m3u8(self, server, username, password):
+        """Export the playlist in M3U8 format."""
+        get_m3u8 = requests.get(
+            f"{server}/get.php?username={username}&password={password}&type=m3u_plus", stream=True
+        )
+        if not get_m3u8.ok:
+            print("[ERROR] Bad credentials or closed endpoint for xstream-codes...")
+            return False
+        else:
+            return get_m3u8.raw
 
     def load_streams(self, server, username, password, type=None, sep_lvl1="", sep_lvl2="---"):
         current_lvl1_previous = ""

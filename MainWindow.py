@@ -14,7 +14,7 @@ import requests_random_user_agent  # noqa
 from PyQt5 import QtCore, QtGui
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QImage, QPixmap
-from PyQt5.QtWidgets import QMainWindow, QMessageBox
+from PyQt5.QtWidgets import QMainWindow, QMessageBox, QFileDialog
 from PyQt5.uic import loadUi
 
 from OpenLocalFile import OpenLocalFile
@@ -24,6 +24,9 @@ from OpenXtream import OpenXtream
 from constant import BASE_DIR, MARGIN
 from main_ui import Ui_MainWindow
 from playlist import Playlist
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class MainWindow(QMainWindow, Ui_MainWindow):
@@ -708,15 +711,15 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 for proc in process.children(recursive=True):
                     try:
                         proc.kill()
-                    except:
-                        pass
-            except:
-                pass
+                    except psutil.NoSuchProcess as error:
+                        logger.exception(error)
+            except Exception as general_process_error:
+                logger.exception(general_process_error)
             self.player_process = None
         # Create a new process in a separated thread
         self.player_process = subprocess.Popen(
             [self.config_player, url.replace("&", "^&"), self.config_player_params],
-            shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE
+            shell=True
         )
 
     def save_config(self):
@@ -750,3 +753,22 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.btn_watch.setEnabled(True)
         else:
             self.btn_watch.setEnabled(False)
+
+    def export_m3u8_file(self):
+        """Export the current playlist to a m3u8 file."""
+        filename = QFileDialog.getSaveFileName(
+            self,
+            "Export playlist",
+            "",
+            "M3U8 playlist (*.m3u8)",
+        )
+        if filename[0]:
+            self.statusbar.showMessage("Export playlist...")
+            m3u8_content = self.pl.export_m3u8(
+                server=self.latest_server, username=self.latest_username,
+                password=self.latest_password
+            )
+            with open(filename[0], "wb", encoding="utf-8") as f:
+                f.write(m3u8_content)
+            f.flush()
+            self.statusbar.showMessage("Playlist exported.")
