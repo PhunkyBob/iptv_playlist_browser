@@ -4,6 +4,7 @@ This class allows to display the main application window.
 """
 
 import configparser
+import logging
 import os
 import subprocess
 from datetime import datetime
@@ -24,7 +25,6 @@ from OpenXtream import OpenXtream
 from constant import BASE_DIR, MARGIN
 from main_ui import Ui_MainWindow
 from playlist import Playlist
-import logging
 
 logger = logging.getLogger(__name__)
 
@@ -91,7 +91,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             config.read(self.config_file, encoding="utf-8")
             if "PREFERENCES" in config and "remember_latest" in config["PREFERENCES"]:
                 self.config_remember = config["PREFERENCES"]["remember_latest"]
-                self.config_remember = False if self.config_remember.lower() in ("0", "", "n", "no", "false") else True
+                self.config_remember = bool(self.config_remember.lower() not in ("0", "", "n", "no", "false"))
+
             if "PREFERENCES" in config and "player" in config["PREFERENCES"]:
                 self.config_player = config["PREFERENCES"]["player"]
             if "PREFERENCES" in config and "player_params" in config["PREFERENCES"]:
@@ -102,9 +103,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 self.config_sep_2 = config["PREFERENCES"]["playlist_categ_separator"]
             if "PREFERENCES" in config and "try_xtream_code" in config["PREFERENCES"]:
                 self.config_try_xtream_code = config["PREFERENCES"]["try_xtream_code"]
-                self.config_try_xtream_code = (
-                    False if self.config_try_xtream_code.lower() in ("0", "", "n", "no", "false") else True
+                self.config_try_xtream_code = bool(
+                    self.config_try_xtream_code.lower() not in ("0", "", "n", "no", "false")
                 )
+
             if "PREFERENCES" in config and "catchup_add_minutes" in config["PREFERENCES"]:
                 self.config_add_minutes = int(config["PREFERENCES"]["catchup_add_minutes"])
             if "XTREAM_CODE" in config and "username" in config["XTREAM_CODE"]:
@@ -244,15 +246,19 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         dialog.exec()
         self.statusbar.showMessage("Preferences saved", 5000)
         if dialog.validated:
-            # Dialog closed with "OK" --> save parameters
-            self.config_player = dialog.player
-            self.config_player_params = dialog.player_params
-            self.config_remember = dialog.remember_latest
-            self.config_try_xtream_code = dialog.try_xtream_code
-            self.config_sep_1 = dialog.playlist_group_separator
-            self.config_sep_2 = dialog.playlist_category_separator
-            self.config_add_minutes = dialog.catchup_add_minutes
-            self.save_config()
+            self._extracted_from_preferences(dialog)
+
+    # TODO Rename this here and in `preferences`
+    def _extracted_from_preferences(self, dialog):
+        # Dialog closed with "OK" --> save parameters
+        self.config_player = dialog.player
+        self.config_player_params = dialog.player_params
+        self.config_remember = dialog.remember_latest
+        self.config_try_xtream_code = dialog.try_xtream_code
+        self.config_sep_1 = dialog.playlist_group_separator
+        self.config_sep_2 = dialog.playlist_category_separator
+        self.config_add_minutes = dialog.catchup_add_minutes
+        self.save_config()
 
     def open_local_file(self):
         """Open "open local file" dialog."""
@@ -301,7 +307,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.config_remember,
         )
         dialog.exec()
-        if dialog.remember and dialog.username and dialog.password and dialog.password:
+        if dialog.remember and dialog.username and dialog.password:
             self.latest_username = dialog.username
             self.latest_password = dialog.password
             self.latest_server = dialog.server
@@ -362,17 +368,18 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.update_groups_vod()
         self.update_groups_series()
         if not self.pl.api_account:
-            self.chk_catchup.setEnabled(False)
-            self.date_start.setEnabled(False)
-            self.time_start.setEnabled(False)
+            self._extracted_from_open_file(False)
             self.statusbar.showMessage("Playlist loaded.")
         else:
-            self.chk_catchup.setEnabled(True)
-            self.date_start.setEnabled(True)
-            self.time_start.setEnabled(True)
+            self._extracted_from_open_file(True)
             if self.pl.api_account:
                 message = f"""Username: {self.pl.api_account['user_info']['username']} , Status: {self.pl.api_account['user_info']['status']}, Expiration: {datetime.fromtimestamp(int(self.pl.api_account['user_info']['exp_date']))}, Active Connections: {self.pl.api_account['user_info']['active_cons']}, Max Connections: {self.pl.api_account['user_info']['max_connections']}"""
                 self.statusbar.showMessage(f"{message}")
+
+    def _extracted_from_open_file(self, arg0):
+        self.chk_catchup.setEnabled(arg0)
+        self.date_start.setEnabled(arg0)
+        self.time_start.setEnabled(arg0)
 
     def about(self):
         """Open "about" dialog."""
@@ -398,15 +405,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def check_version(self):
         """Check what is the latest version on GitHub."""
         res = requests.get(self.latest_version_url)
-        latest = ""
         if res.status_code != 200:
-            return latest
-        else:
-            latest_version = res.text.strip()
-            if latest_version == self.version:
-                return " (latest)"
-            else:
-                return f" ({latest_version} available)"
+            return ""
+        latest_version = res.text.strip()
+        return " (latest)" if latest_version == self.version else f" ({latest_version} available)"
 
     def tab_changed(self):
         self.txt_url.setText("")
@@ -528,7 +530,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.lbl_catchup.setText("No catchup available")
             if url in self.pl.channels_details and self.pl.channels_details[url]["tv_archive"]:
                 self.block_epg_enable(True)
-                self.lbl_catchup.setText(f"Catchup available")
+                self.lbl_catchup.setText("Catchup available")
                 if self.pl.channels_details[url]["stream_id"]:
                     self.update_epg(self.pl.channels_details[url]["stream_id"])
                 else:
@@ -550,18 +552,18 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         if self.list_channels.currentItem():
             channel = self.list_channels.currentItem().text()
             url = self.current_channels[channel]
-            if self.chk_catchup.isChecked() and self.chk_catchup.isEnabled():
-                if self.pl.channels_details[url]["stream_id"]:
-                    stream = self.pl.channels_details[url]["stream_id"]
-                    server = self.pl.api_account["server_info"]["url"]
-                    protocol = self.pl.api_account["server_info"]["server_protocol"]
-                    port = self.pl.api_account["server_info"]["port"]
-                    username = self.pl.api_account["user_info"]["username"]
-                    password = self.pl.api_account["user_info"]["password"]
-                    date = self.date_start.text()
-                    time = self.time_start.text().replace(":", "-")
-                    duration = self.txt_duration.text()
-                    url = f"{protocol}://{server}:{port}/streaming/timeshift.php?username={username}&password={password}&stream={stream}&start={date}:{time}&duration={duration}"
+            if self.chk_catchup.isChecked() and self.chk_catchup.isEnabled() and self.pl.channels_details[url][
+                "stream_id"]:
+                stream = self.pl.channels_details[url]["stream_id"]
+                server = self.pl.api_account["server_info"]["url"]
+                protocol = self.pl.api_account["server_info"]["server_protocol"]
+                port = self.pl.api_account["server_info"]["port"]
+                username = self.pl.api_account["user_info"]["username"]
+                password = self.pl.api_account["user_info"]["password"]
+                date = self.date_start.text()
+                time = self.time_start.text().replace(":", "-")
+                duration = self.txt_duration.text()
+                url = f"{protocol}://{server}:{port}/streaming/timeshift.php?username={username}&password={password}&stream={stream}&start={date}:{time}&duration={duration}"
             self.txt_url.setText(url)
 
     def update_epg(self, stream):
@@ -575,8 +577,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def select_epg(self):
         """When user selects a program in EPG, update the catchup settings."""
-        item = self.cmb_epg.currentData()
-        if item:
+        if item := self.cmb_epg.currentData():
             self.date_start.setDate(QtCore.QDate.fromString(item["start_date"], QtCore.Qt.ISODate))
             self.time_start.setTime(QtCore.QTime.fromString(item["start_time"]))
             self.txt_duration.setText(str(item["duration"] + self.config_add_minutes))
@@ -683,14 +684,18 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.statusbar.showMessage("Get episodes...")
         self.txt_url.setText("")
         if self.list_channels_series.currentItem():
-            channel = self.list_channels_series.currentItem().text()
-            series_id = self.current_channels_series[channel]
-            self.current_episodes = self.pl.get_series(series_id)
-            self.list_episodes.setCurrentItem(None)
-            self.list_episodes.clear()
-            for e in self.current_episodes:
-                self.list_episodes.addItem(e)
+            self._extracted_from_select_channel_series_6()
         self.statusbar.showMessage("Episodes loaded.")
+
+    # TODO Rename this here and in `select_channel_series`
+    def _extracted_from_select_channel_series_6(self):
+        channel = self.list_channels_series.currentItem().text()
+        series_id = self.current_channels_series[channel]
+        self.current_episodes = self.pl.get_series(series_id)
+        self.list_episodes.setCurrentItem(None)
+        self.list_episodes.clear()
+        for e in self.current_episodes:
+            self.list_episodes.addItem(e)
 
     def select_episode(self):
         """When an episode is selected."""
