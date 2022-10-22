@@ -68,7 +68,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         loadUi(f"{BASE_DIR}/ui/main_ui.ui", self)
         # self.setupUi(self)
         self.connect_signals_slots()
-        self.pl = None
+        self.pl: Playlist = Playlist()
         now = datetime.now()
         self.version = version
         self.statusbar.showMessage(f"Version: {self.version}", 5000)
@@ -85,14 +85,15 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.onlyInt = QtGui.QIntValidator()
         self.txt_duration.setValidator(self.onlyInt)
 
+        self.config_parse()
+
+    def config_parse(self):
         # Read config
-        config = configparser.ConfigParser()
+        config: configparser.ConfigParser = configparser.ConfigParser()
         if os.path.isfile(self.config_file):
             config.read(self.config_file, encoding="utf-8")
             if "PREFERENCES" in config and "remember_latest" in config["PREFERENCES"]:
-                self.config_remember = config["PREFERENCES"]["remember_latest"]
-                self.config_remember = bool(self.config_remember.lower() not in ("0", "", "n", "no", "false"))
-
+                self.config_remember: bool = config["PREFERENCES"]["remember_latest"].lower() not in ("0", "", "n", "no", "false")
             if "PREFERENCES" in config and "player" in config["PREFERENCES"]:
                 self.config_player = config["PREFERENCES"]["player"]
             if "PREFERENCES" in config and "player_params" in config["PREFERENCES"]:
@@ -102,13 +103,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             if "PREFERENCES" in config and "playlist_categ_separator" in config["PREFERENCES"]:
                 self.config_sep_2 = config["PREFERENCES"]["playlist_categ_separator"]
             if "PREFERENCES" in config and "try_xtream_code" in config["PREFERENCES"]:
-                self.config_try_xtream_code = config["PREFERENCES"]["try_xtream_code"]
-                self.config_try_xtream_code = bool(
-                    self.config_try_xtream_code.lower() not in ("0", "", "n", "no", "false")
-                )
-
+                self.config_try_xtream_code: bool = config["PREFERENCES"]["try_xtream_code"].lower() not in ("0", "", "n", "no", "false")
             if "PREFERENCES" in config and "catchup_add_minutes" in config["PREFERENCES"]:
-                self.config_add_minutes = int(config["PREFERENCES"]["catchup_add_minutes"])
+                self.config_add_minutes: int = int(config["PREFERENCES"]["catchup_add_minutes"])
             if "XTREAM_CODE" in config and "username" in config["XTREAM_CODE"]:
                 self.latest_username = config["XTREAM_CODE"]["username"]
             if "XTREAM_CODE" in config and "password" in config["XTREAM_CODE"]:
@@ -119,9 +116,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 self.latest_local = config["LOCAL"]["filepath"]
             if "REMOTE" in config and "filepath" in config["REMOTE"]:
                 self.latest_remote = config["REMOTE"]["filepath"]
-
         self.save_config()
-
         # Alert if there is no player already set
         if not os.path.isfile(self.config_player):
             self.warning_player()
@@ -552,8 +547,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         if self.list_channels.currentItem():
             channel = self.list_channels.currentItem().text()
             url = self.current_channels[channel]
-            if self.chk_catchup.isChecked() and self.chk_catchup.isEnabled() and self.pl.channels_details[url][
-                "stream_id"]:
+            if self.chk_catchup.isChecked() and self.chk_catchup.isEnabled() and self.pl.channels_details[url]["stream_id"]:
                 stream = self.pl.channels_details[url]["stream_id"]
                 server = self.pl.api_account["server_info"]["url"]
                 protocol = self.pl.api_account["server_info"]["server_protocol"]

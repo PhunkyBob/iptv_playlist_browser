@@ -61,22 +61,7 @@ class Playlist:
     ) -> None:
         if filename:
             # If the file is remote, download it
-            if filename.lower().startswith("http"):
-                response = requests.get(filename)
-                if not response.ok:
-                    print("[ERROR] Can't download file")
-
-                os.makedirs(f"{self.temp_folder}", exist_ok=True)
-                tmp_filename = "temp.m3u"
-                if "Content-Disposition" in response.headers:
-                    if res := re.search(r"filename=\"(.+?)\"", response.headers["Content-Disposition"]):
-                        if res[1]:
-                            tmp_filename = res[1]
-
-                cached_file = f"{self.temp_folder}/{tmp_filename}"
-                with open(cached_file, "wb") as pl:
-                    pl.write(response.content)
-                filename = cached_file
+            filename = self.remote_download(filename)
 
             if not os.path.isfile(filename):
                 print(f'[ERROR] File "{filename}" is unavailable...')
@@ -85,7 +70,7 @@ class Playlist:
                 # Even if it's a playlist, we try to get Xtream credentials
                 with open(filename, "r", encoding="utf-8") as f:
                     while content := f.readline():
-                        if res := re.search(r"^http(s?)://(.+)/(.+)/(.+)/([\d]+)$", content.strip(), re.IGNORECASE):
+                        if res := re.search(r"^http(s?)://(.+)/(.+)/(.+)/(\d+)$", content.strip(), re.IGNORECASE):
                             server = f"http{res[1]}://{res[2]}"
                             username = res[3]
                             password = res[4]
@@ -100,6 +85,25 @@ class Playlist:
         # Load from API
         self.load_from_api(server, username, password, sep_lvl1=sep_lvl1, sep_lvl2=sep_lvl2)
         return
+
+    def remote_download(self, filename):
+        if filename.lower().startswith("http"):
+            response = requests.get(filename)
+            if not response.ok:
+                print("[ERROR] Can't download file")
+
+            os.makedirs(f"{self.temp_folder}", exist_ok=True)
+            tmp_filename = "temp.m3u"
+            if "Content-Disposition" in response.headers:
+                if res := re.search(r"filename=\"(.+?)\"", response.headers["Content-Disposition"]):
+                    if res[1]:
+                        tmp_filename = res[1]
+
+            cached_file = f"{self.temp_folder}/{tmp_filename}"
+            with open(cached_file, "wb") as pl:
+                pl.write(response.content)
+            filename = cached_file
+        return filename
 
     def load_from_api(self, server, username, password, sep_lvl1="", sep_lvl2="---"):
         """Create a playlist from Xtream credentials."""
