@@ -111,4 +111,4 @@ class OpenLocalFile(QDialog):
                 cnt += 1
                 if cnt > self.preview_lines:
                     break
-        self.txt_preview.setText(preview + '...')
+        self.txt_preview.setText(f'{preview}...')
