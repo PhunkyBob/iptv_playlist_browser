@@ -1,0 +1,23 @@
+#EXTM3U
+#EXTINF:-1,▼---Main group 1---▼
+http://myserver.com:8000/login/password/0
+#EXTINF:-1,---●★Sub group 1★●---
+http://myserver.com:8000/login/password/0
+#EXTINF:-1,Channel 1
+http://myserver.com:8000/login/password/1
+#EXTINF:-1,Channel 2
+http://myserver.com:8000/login/password/2
+#EXTINF:-1 group-title="Specific group",Channel 3
+http://myserver.com:8000/login/password/3
+#EXTINF:-1,---●★Sub group 2★●---
+http://myserver.com:8000/login/password/0
+#EXTINF:-1,Channel 4
+http://myserver.com:8000/login/password/4
+#EXTINF:-1,Channel 5
+http://myserver.com:8000/login/password/5
+#EXTINF:-1,▼---Main group 2---▼
+http://myserver.com:8000/login/password/0
+#EXTINF:-1,---●★Sub group 3★●---
+http://myserver.com:8000/login/password/0
+#EXTINF:-1,Channel 6
+http://myserver.com:8000/login/password/6
