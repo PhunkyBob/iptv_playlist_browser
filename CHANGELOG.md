@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.3.0 (2022-12-28)
+- [CHANGE] Refacto.
+  
 ## 1.2.2 (2022-09-14)
 - [BUGFIX] When EPG is not available. 
 
