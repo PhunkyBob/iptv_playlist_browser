@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.4.0 (2023-01-01)
+- [NEW] Download playlist from Xtream.
+- [NEW] Generate playlist.
+- [NEW] Xtream account infos.
+
 ## 1.3.0 (2022-12-28)
 - [CHANGE] Refacto.
   

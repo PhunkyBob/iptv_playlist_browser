@@ -441,9 +441,9 @@
    <widget class="QLabel" name="lbl_wait">
     <property name="geometry">
      <rect>
-      <x>280</x>
+      <x>20</x>
       <y>150</y>
-      <width>301</width>
+      <width>831</width>
       <height>241</height>
      </rect>
     </property>
@@ -490,7 +490,23 @@
     </property>
     <addaction name="action_About"/>
    </widget>
+   <widget class="QMenu" name="menuTools">
+    <property name="title">
+     <string>Tools</string>
+    </property>
+    <widget class="QMenu" name="menuXtream">
+     <property name="title">
+      <string>Xtream</string>
+     </property>
+     <addaction name="action_Account_infos"/>
+     <addaction name="action_Download_playlist_lite"/>
+     <addaction name="action_Download_playlist_full"/>
+    </widget>
+    <addaction name="menuXtream"/>
+    <addaction name="action_Generate_playlist"/>
+   </widget>
    <addaction name="menu_File"/>
+   <addaction name="menuTools"/>
    <addaction name="menu_About"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
@@ -516,7 +532,10 @@
      <normaloff>../resources/login.png</normaloff>../resources/login.png</iconset>
    </property>
    <property name="text">
-    <string>&amp;Xstream Code API...</string>
+    <string>&amp;Xtream Code API...</string>
+   </property>
+   <property name="toolTip">
+    <string>Xtream Code API</string>
    </property>
   </action>
   <action name="action_Open_local_file">
@@ -563,6 +582,29 @@
   <action name="action_About">
    <property name="text">
     <string>&amp;About...</string>
+   </property>
+  </action>
+  <action name="action_Download_playlist_lite">
+   <property name="text">
+    <string>Download playlist (lite)</string>
+   </property>
+  </action>
+  <action name="action_Download_playlist_full">
+   <property name="text">
+    <string>Download playlist (full)</string>
+   </property>
+  </action>
+  <action name="action_Generate_playlist">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Generate playlist...</string>
+   </property>
+  </action>
+  <action name="action_Account_infos">
+   <property name="text">
+    <string>Account infos</string>
    </property>
   </action>
  </widget>

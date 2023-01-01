@@ -91,6 +91,39 @@ def test_load_streams():
     assert len(urls_details) > 0
 
 
+def test_download_m3u():
+    conf = _get_credentials_from_config()
+    pl = Playlist()
+    file = pl.download_m3u(conf["server"], conf["username"], conf["password"], "tests")
+    assert os.path.exists(file)
+    assert os.path.getsize(file) > 0
+
+
+def test_download_m3u_error():
+    pl = Playlist()
+    file = pl.download_m3u("https://unexisting-xtream-code-provider.com", "foo", "bar", "tests")
+    assert file == False
+
+
+def test_generate_m3u():
+    pl = Playlist()
+    pl.load_from_file(TEST_PLAYLIST)
+    file = "tests/generated_playlist.m3u"
+    pl.generate_m3u(file, export_live=True)
+    assert os.path.exists(file)
+    assert os.path.getsize(file) > 0
+
+
+def test_generate_m3u_full():
+    conf = _get_credentials_from_config()
+    pl = Playlist()
+    pl.load_from_api(conf["server"], conf["username"], conf["password"])
+    file = "tests/generated_playlist.m3u"
+    pl.generate_m3u(file, export_live=True, export_vod=True, export_series=True)
+    assert os.path.exists(file)
+    assert os.path.getsize(file) > 0
+
+
 def test_decode():
     assert Playlist.decode("TcOpdMOpbw==") == "Météo"
 

@@ -3,7 +3,7 @@
 This class allows to display the main application window.
 """
 
-from PyQt5.QtWidgets import QMainWindow, QMessageBox
+from PyQt5.QtWidgets import QMainWindow, QMessageBox, QFileDialog
 from PyQt5.QtGui import QImage, QPixmap
 from PyQt5.QtCore import Qt
 from main_ui import Ui_MainWindow
@@ -19,8 +19,11 @@ from OpenPreferences import OpenPreferences
 from OpenLocalFile import OpenLocalFile
 from OpenRemoteFile import OpenRemoteFile
 from OpenXtream import OpenXtream
+from GeneratePlaylist import GeneratePlaylist
 import requests
 import tools
+from typing import Dict
+from datetime import datetime
 
 margin = 10
 
@@ -112,7 +115,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 self.latest_local = config["LOCAL"]["filepath"]
             if "REMOTE" in config and "filepath" in config["REMOTE"]:
                 self.latest_remote = config["REMOTE"]["filepath"]
-
+        self.update_menu_status()
         self.save_config()
 
         # Alert if there is no player already set
@@ -191,6 +194,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.action_api.triggered.connect(self.open_xtream)
         self.action_About.triggered.connect(self.about)
         self.action_Preferences.triggered.connect(self.preferences)
+        self.action_Account_infos.triggered.connect(self.display_account_infos)
+        self.action_Download_playlist_lite.triggered.connect(self.download_playlist_lite)
+        self.action_Download_playlist_full.triggered.connect(self.download_playlist_full)
+        self.action_Generate_playlist.triggered.connect(self.generate_playlist)
         self.btn_watch.clicked.connect(self.watch)
         self.txt_url.textChanged.connect(self.url_changed)
         self.tab_main.currentChanged.connect(self.tab_changed)
@@ -294,11 +301,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.config_remember,
         )
         dialog.exec()
-        if dialog.remember and dialog.username and dialog.password and dialog.password:
+
+        if dialog.username and dialog.password and dialog.password:
             self.latest_username = dialog.username
             self.latest_password = dialog.password
             self.latest_server = dialog.server
-            self.save_config()
+            self.update_menu_status()
+            if dialog.remember:
+                self.save_config()
         if dialog.username:
             self.open_file(
                 server=dialog.server,
@@ -351,6 +361,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.list_categ_vod.clear()
         self.list_channels_vod.setCurrentItem(None)
         self.list_channels_vod.clear()
+        self.action_Generate_playlist.setEnabled(True)
         self.update_groups()
         self.update_groups_vod()
         self.update_groups_series()
@@ -363,6 +374,96 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.date_start.setEnabled(True)
             self.time_start.setEnabled(True)
         self.hide_loader()
+
+    def download_playlist(self, playlist_plus: bool = False):
+        """Download playlist from xtream."""
+        options = QFileDialog.Options()
+        options |= QFileDialog.DontUseNativeDialog
+        folder = QFileDialog.getExistingDirectory(
+            self,
+            "Download playlist in folder",
+            "",
+            options=options,
+        )
+        if folder:
+            self.show_loader("Downloading playlist...")
+            filename = Playlist.download_m3u(
+                self.latest_server, self.latest_username, self.latest_password, folder, playlist_plus
+            )
+            self.hide_loader()
+            msgBox = QMessageBox()
+            if filename:
+                msgBox.setIcon(QMessageBox.Information)
+                msgBox.setWindowIcon(self.windowIcon())
+                msgBox.setText(f'"{filename}" downloaded successfully.')
+                msgBox.setWindowTitle("Information")
+            else:
+                msgBox.setIcon(QMessageBox.Critical)
+                msgBox.setWindowIcon(self.windowIcon())
+                msgBox.setText(f"Can't download playlist from server.")
+                msgBox.setWindowTitle("Error")
+            msgBox.setStandardButtons(QMessageBox.Ok)
+            msgBox.exec()
+
+    def download_playlist_lite(self):
+        self.download_playlist()
+
+    def download_playlist_full(self):
+        self.download_playlist("m3u_full")
+
+    def generate_playlist(self):
+        """Open "Export playlist" dialog."""
+        dialog = GeneratePlaylist(self)
+        dialog.exec()
+        if dialog.url:
+            self.show_loader("Generating playlist...")
+            self.pl.generate_m3u(
+                output_file=dialog.url,
+                export_live=dialog.chk_live.isChecked(),
+                export_vod=dialog.chk_vod.isChecked(),
+                export_series=dialog.chk_series.isChecked(),
+            )
+            self.hide_loader()
+            msgBox = QMessageBox()
+            msgBox.setIcon(QMessageBox.Information)
+            msgBox.setWindowIcon(self.windowIcon())
+            msgBox.setText(f'"{dialog.url}" generated successfully.')
+            msgBox.setWindowTitle("Information")
+            msgBox.setStandardButtons(QMessageBox.Ok)
+            msgBox.exec()
+
+    def display_account_infos(self) -> None:
+        self.show_loader("Gathering infos...")
+        infos = Playlist.get_api_infos(self.latest_server, self.latest_username, self.latest_password)
+        infos = self.format_account_infos(infos)
+        self.hide_loader()
+        msgBox = QMessageBox()
+        msgBox.setIcon(QMessageBox.Information)
+        msgBox.setWindowIcon(self.windowIcon())
+        msgBox.setText(infos)
+        msgBox.setWindowTitle("Information")
+        msgBox.setStandardButtons(QMessageBox.Ok)
+        msgBox.exec()
+
+    def format_account_infos(self, infos: Dict) -> str:
+        result = ""
+        result += "User infos\n"
+        if "user_info" in infos:
+            for elem in ["username", "message", "status", "max_connections", "exp_date", "created_at"]:
+                if elem in infos["user_info"]:
+                    val = infos["user_info"][elem]
+                    if elem in ["exp_date", "created_at"]:
+                        val = datetime.fromtimestamp(int(val))
+                    result += f"{elem}: {val}\n"
+        result += "\nServer infos\n"
+        if "server_info" in infos:
+            for elem in ["url", "port", "https_port", "server_protocol", "rtmp_port", "timezone", "timestamp_now"]:
+                if elem in infos["server_info"]:
+                    val = infos["server_info"][elem]
+                    if elem in ["timestamp_now"]:
+                        val = datetime.fromtimestamp(int(val))
+                    result += f"{elem}: {val}\n"
+        return result
 
     def about(self):
         """Open "about" dialog."""
@@ -712,8 +813,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             shell=True,
         )
 
-    def show_loader(self):
+    def show_loader(self, message: str = "LOADING..."):
         """Display the loader."""
+        self.lbl_wait.setText(message)
         self.lbl_wait.show()
         self.lbl_wait.repaint()
 
@@ -753,3 +855,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.btn_watch.setEnabled(True)
         else:
             self.btn_watch.setEnabled(False)
+
+    def update_menu_status(self):
+        if self.latest_server and self.latest_username and self.latest_password:
+            self.menuXtream.setEnabled(True)
+        else:
+            self.menuXtream.setEnabled(False)

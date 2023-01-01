@@ -38,6 +38,11 @@ Xtream API
 # Serie infos
 {server}/player_api.php?username={username}&password={password}&action=get_series_info&series_id=X
 
+# M3U
+{server}/get.php?username={username}&password={password}&type=m3u&output=mpegts
+# M3U plus
+{server}/get.php?username={username}&password={password}&type=m3u_plus&output=mpegts
+
 """
 
 
@@ -89,7 +94,8 @@ class Playlist:
             ):
                 return
             # Load from a file
-            return self.load_from_file(filename, sep_lvl1, sep_lvl2)
+            self.load_from_file(filename, sep_lvl1, sep_lvl2)
+            return
 
         if server:
             # Load from API
@@ -371,6 +377,48 @@ class Playlist:
                     password = res[4]
                     break
         return server, username, password
+
+    @staticmethod
+    def download_m3u(server: str, username: str, password: str, folder: str = ".", playlist_plus: bool = False) -> str:
+        playlist_type = "m3u_plus" if playlist_plus else "m3u"
+        try:
+            res = requests.get(
+                f"{server}/get.php?username={username}&password={password}&type={playlist_type}&output=mpegts"
+            )
+        except Exception:
+            return False
+        if res.status_code not in {200, 201}:
+            print("[ERROR] Bad credentials...")
+            return False
+        filename = re.findall('filename="(.+)"', res.headers["content-disposition"])[0]
+        os.makedirs(f"{folder}", exist_ok=True)
+        output_file = f"{folder}/{filename}"
+        with open(output_file, "wb") as f:
+            f.write(res.content)
+        return output_file
+
+    @staticmethod
+    def _get_playlist_lines(channels: Dict) -> List[str]:
+        lines: List[str] = []
+        for lvl1 in channels:
+            for lvl2 in channels[lvl1]:
+                for title, url in channels[lvl1][lvl2].items():
+                    lines.extend((f'#EXTINF:-1 group-title="{lvl1}",{title}', url))
+        return lines
+
+    def generate_m3u(
+        self, output_file: str, export_live: bool = True, export_vod: bool = False, export_series: bool = False
+    ):
+        with open(output_file, "wt", encoding="utf-8") as f:
+            f.write("#EXTM3U\n")
+            if export_live:
+                f.writelines(line + "\n" for line in Playlist._get_playlist_lines(self.channels))
+            if export_vod:
+                f.writelines(line + "\n" for line in Playlist._get_playlist_lines(self.vod))
+            if export_series:
+                # TODO: handle this case, but it will be a lot of lines
+                # f.writelines(line + "\n" for line in Playlist._get_playlist_lines(self.series))
+                print("Export series not handled yet")
 
     @staticmethod
     def decode(base64_string):
