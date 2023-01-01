@@ -3,6 +3,7 @@
 This class allows to display the main application window.
 """
 
+
 from PyQt5.QtWidgets import QMainWindow, QMessageBox, QFileDialog
 from PyQt5.QtGui import QImage, QPixmap
 from PyQt5.QtCore import Qt
@@ -14,6 +15,7 @@ import psutil
 from PyQt5 import QtCore, QtGui
 from datetime import datetime
 import configparser
+import contextlib
 import os
 from OpenPreferences import OpenPreferences
 from OpenLocalFile import OpenLocalFile
@@ -22,10 +24,11 @@ from OpenXtream import OpenXtream
 from GeneratePlaylist import GeneratePlaylist
 import requests
 import tools
-from typing import Dict
+from typing import Dict, Set
 from datetime import datetime
 
-margin = 10
+MARGIN = 10
+CONFIG_POSSIBLE_FALSE: Set = {"0", "", "n", "no", "false"}
 
 
 class MainWindow(QMainWindow, Ui_MainWindow):
@@ -39,10 +42,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     current_categ_2: str = ""
     current_categ_vod: str = ""
     current_categ_series: str = ""
-    current_channels = {}
-    current_channels_vod = {}
-    current_channels_series = {}
-    current_episodes = {}
+    current_channels: Dict = {}
+    current_channels_vod: Dict = {}
+    current_channels_series: Dict = {}
+    current_episodes: Dict = {}
     version: str = ""
 
     # Config
@@ -68,10 +71,20 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.connect_signals_slots()
         self.pl = None
         self.lbl_wait.hide()
-        now = datetime.now()
         self.version = version
 
         # Set default values
+        self.set_default_values()
+
+        # Read config
+        self.read_config()
+
+        # Alert if there is no player already set
+        if not os.path.isfile(self.config_player):
+            self.warning_player()
+
+    def set_default_values(self) -> None:
+        now = datetime.now()
         self.setWindowTitle(f"{self.main_title}")
         self.date_start.setDate(QtCore.QDate(now.year, now.month, now.day))
         self.time_start.setTime(QtCore.QTime(now.hour, (now.minute // 5) * 5))
@@ -83,13 +96,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.onlyInt = QtGui.QIntValidator()
         self.txt_duration.setValidator(self.onlyInt)
 
-        # Read config
+    def read_config(self) -> None:
         config = configparser.ConfigParser()
         if os.path.isfile(self.config_file):
             config.read(self.config_file, encoding="utf-8")
             if "PREFERENCES" in config and "remember_latest" in config["PREFERENCES"]:
-                self.config_remember = config["PREFERENCES"]["remember_latest"]
-                self.config_remember = False if self.config_remember.lower() in ("0", "", "n", "no", "false") else True
+                self.config_remember = config["PREFERENCES"]["remember_latest"].lower() not in CONFIG_POSSIBLE_FALSE
             if "PREFERENCES" in config and "player" in config["PREFERENCES"]:
                 self.config_player = config["PREFERENCES"]["player"]
             if "PREFERENCES" in config and "player_params" in config["PREFERENCES"]:
@@ -99,9 +111,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             if "PREFERENCES" in config and "playlist_categ_separator" in config["PREFERENCES"]:
                 self.config_sep_2 = config["PREFERENCES"]["playlist_categ_separator"]
             if "PREFERENCES" in config and "try_xtream_code" in config["PREFERENCES"]:
-                self.config_try_xtream_code = config["PREFERENCES"]["try_xtream_code"]
                 self.config_try_xtream_code = (
-                    False if self.config_try_xtream_code.lower() in ("0", "", "n", "no", "false") else True
+                    config["PREFERENCES"]["try_xtream_code"].lower() not in CONFIG_POSSIBLE_FALSE
                 )
             if "PREFERENCES" in config and "catchup_add_minutes" in config["PREFERENCES"]:
                 self.config_add_minutes = int(config["PREFERENCES"]["catchup_add_minutes"])
@@ -118,17 +129,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.update_menu_status()
         self.save_config()
 
-        # Alert if there is no player already set
-        if not os.path.isfile(self.config_player):
-            self.warning_player()
-
     def resizeEvent(self, *args):
         """Resize and move all elements when window is resized."""
         QMainWindow.resizeEvent(self, *args)
-        tab_width = int(self.width() - 2 * margin)
+        tab_width = int(self.width() - 2 * MARGIN)
         tab_height = int(self.height() - 140)
         self.tab_main.resize(tab_width, tab_height)
-        list_width = int((tab_width - 4 * margin) / 3)
+        list_width = int((tab_width - 4 * MARGIN) / 3)
         # Live
         list_height = tab_height - 140
         self.list_categ_1.resize(list_width, list_height)
@@ -137,16 +144,16 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.txt_filter_groups.resize(list_width - 110, 25)
         self.txt_filter_categories.resize(list_width - 110, 25)
         self.txt_filter_channels.resize(list_width - 110, 25)
-        self.frm_catchup.resize(tab_width - 2 * margin, self.frm_catchup.height())
-        self.cmb_epg.resize(self.frm_catchup.width() - 410 - margin, self.cmb_epg.height())
-        self.list_categ_1.move(1 * margin + 0 * list_width, 40)
-        self.list_categ_2.move(2 * margin + 1 * list_width, 40)
-        self.list_channels.move(3 * margin + 2 * list_width, 40)
-        self.txt_filter_groups.move(self.list_categ_1.pos().x() + 110, margin)
-        self.txt_filter_categories.move(self.list_categ_2.pos().x() + 110, margin)
-        self.txt_filter_channels.move(self.list_channels.pos().x() + 110, margin)
+        self.frm_catchup.resize(tab_width - 2 * MARGIN, self.frm_catchup.height())
+        self.cmb_epg.resize(self.frm_catchup.width() - 410 - MARGIN, self.cmb_epg.height())
+        self.list_categ_1.move(1 * MARGIN + 0 * list_width, 40)
+        self.list_categ_2.move(2 * MARGIN + 1 * list_width, 40)
+        self.list_channels.move(3 * MARGIN + 2 * list_width, 40)
+        self.txt_filter_groups.move(self.list_categ_1.pos().x() + 110, MARGIN)
+        self.txt_filter_categories.move(self.list_categ_2.pos().x() + 110, MARGIN)
+        self.txt_filter_channels.move(self.list_channels.pos().x() + 110, MARGIN)
 
-        self.frm_catchup.move(margin, 40 + list_height + 2 * margin)
+        self.frm_catchup.move(MARGIN, 40 + list_height + 2 * MARGIN)
         self.lbl_groups.move(self.list_categ_1.pos().x(), 15)
         self.lbl_categories.move(self.list_categ_2.pos().x(), 15)
         self.lbl_channels.move(self.list_channels.pos().x(), 15)
@@ -158,11 +165,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.picture_vod.resize(list_width, list_height)
         self.txt_filter_groups_vod.resize(list_width - 110, 25)
         self.txt_filter_channels_vod.resize(list_width - 110, 25)
-        self.list_categ_vod.move(1 * margin + 0 * list_width, 40)
-        self.list_channels_vod.move(2 * margin + 1 * list_width, 40)
-        self.picture_vod.move(3 * margin + 2 * list_width, 40)
-        self.txt_filter_groups_vod.move(self.list_categ_vod.pos().x() + 110, margin)
-        self.txt_filter_channels_vod.move(self.list_channels_vod.pos().x() + 110, margin)
+        self.list_categ_vod.move(1 * MARGIN + 0 * list_width, 40)
+        self.list_channels_vod.move(2 * MARGIN + 1 * list_width, 40)
+        self.picture_vod.move(3 * MARGIN + 2 * list_width, 40)
+        self.txt_filter_groups_vod.move(self.list_categ_vod.pos().x() + 110, MARGIN)
+        self.txt_filter_channels_vod.move(self.list_channels_vod.pos().x() + 110, MARGIN)
         self.lbl_groups_vod.move(self.list_categ_vod.pos().x(), 15)
         self.lbl_channels_vod.move(self.list_channels_vod.pos().x(), 15)
 
@@ -173,18 +180,18 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.list_episodes.resize(list_width, list_height)
         self.txt_filter_groups_series.resize(list_width - 110, 25)
         self.txt_filter_channels_series.resize(list_width - 110, 25)
-        self.list_categ_series.move(1 * margin + 0 * list_width, 40)
-        self.list_channels_series.move(2 * margin + 1 * list_width, 40)
-        self.list_episodes.move(3 * margin + 2 * list_width, 40)
-        self.txt_filter_groups_series.move(self.list_categ_series.pos().x() + 110, margin)
-        self.txt_filter_channels_series.move(self.list_channels_series.pos().x() + 110, margin)
+        self.list_categ_series.move(1 * MARGIN + 0 * list_width, 40)
+        self.list_channels_series.move(2 * MARGIN + 1 * list_width, 40)
+        self.list_episodes.move(3 * MARGIN + 2 * list_width, 40)
+        self.txt_filter_groups_series.move(self.list_categ_series.pos().x() + 110, MARGIN)
+        self.txt_filter_channels_series.move(self.list_channels_series.pos().x() + 110, MARGIN)
         self.lbl_groups_series.move(self.list_categ_series.pos().x(), 15)
         self.lbl_channels_series.move(self.list_channels_series.pos().x(), 15)
 
         # Watch
-        self.txt_url.resize(tab_width - self.btn_watch.width() - margin, 25)
-        self.txt_url.move(margin, tab_height + 2 * margin)
-        self.btn_watch.move(self.width() - self.btn_watch.width() - margin, tab_height + 2 * margin)
+        self.txt_url.resize(tab_width - self.btn_watch.width() - MARGIN, 25)
+        self.txt_url.move(MARGIN, tab_height + 2 * MARGIN)
+        self.btn_watch.move(self.width() - self.btn_watch.width() - MARGIN, tab_height + 2 * MARGIN)
 
     def connect_signals_slots(self):
         """Link elements signals to functions."""
@@ -302,7 +309,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         )
         dialog.exec()
 
-        if dialog.username and dialog.password and dialog.password:
+        if dialog.username and dialog.password and dialog.server:
             self.latest_username = dialog.username
             self.latest_password = dialog.password
             self.latest_server = dialog.server
@@ -366,26 +373,26 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.update_groups_vod()
         self.update_groups_series()
         if not self.pl.api_account:
-            self.chk_catchup.setEnabled(False)
-            self.date_start.setEnabled(False)
-            self.time_start.setEnabled(False)
+            self.set_catchup_enabled(False)
         else:
-            self.chk_catchup.setEnabled(True)
-            self.date_start.setEnabled(True)
-            self.time_start.setEnabled(True)
+            self.set_catchup_enabled(True)
         self.hide_loader()
+
+    def set_catchup_enabled(self, enabled: bool):
+        self.chk_catchup.setEnabled(enabled)
+        self.date_start.setEnabled(enabled)
+        self.time_start.setEnabled(enabled)
 
     def download_playlist(self, playlist_plus: bool = False):
         """Download playlist from xtream."""
         options = QFileDialog.Options()
         options |= QFileDialog.DontUseNativeDialog
-        folder = QFileDialog.getExistingDirectory(
+        if folder := QFileDialog.getExistingDirectory(
             self,
             "Download playlist in folder",
             "",
             options=options,
-        )
-        if folder:
+        ):
             self.show_loader("Downloading playlist...")
             filename = Playlist.download_m3u(
                 self.latest_server, self.latest_username, self.latest_password, folder, playlist_plus
@@ -400,7 +407,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             else:
                 msgBox.setIcon(QMessageBox.Critical)
                 msgBox.setWindowIcon(self.windowIcon())
-                msgBox.setText(f"Can't download playlist from server.")
+                msgBox.setText("Can't download playlist from server.")
                 msgBox.setWindowTitle("Error")
             msgBox.setStandardButtons(QMessageBox.Ok)
             msgBox.exec()
@@ -446,8 +453,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         msgBox.exec()
 
     def format_account_infos(self, infos: Dict) -> str:
-        result = ""
-        result += "User infos\n"
+        result = "User infos\n"
         if "user_info" in infos:
             for elem in ["username", "message", "status", "max_connections", "exp_date", "created_at"]:
                 if elem in infos["user_info"]:
@@ -489,15 +495,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def check_version(self):
         """Check what is the latest version on GitHub."""
         res = requests.get(self.latest_version_url)
-        latest = ""
         if res.status_code != 200:
-            return latest
-        else:
-            latest_version = res.text.strip()
-            if latest_version == self.version:
-                return " (latest)"
-            else:
-                return f" ({latest_version} available)"
+            return ""
+        latest_version = res.text.strip()
+        return " (latest)" if latest_version == self.version else f" ({latest_version} available)"
 
     def tab_changed(self):
         self.txt_url.setText("")
@@ -619,7 +620,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.lbl_catchup.setText("No catchup available")
             if url in self.pl.channels_details and self.pl.channels_details[url]["tv_archive"]:
                 self.block_epg_enable(True)
-                self.lbl_catchup.setText(f"Catchup available")
+                self.lbl_catchup.setText("Catchup available")
                 if self.pl.channels_details[url]["stream_id"]:
                     self.update_epg(self.pl.channels_details[url]["stream_id"])
                 else:
@@ -641,18 +642,21 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         if self.list_channels.currentItem():
             channel = self.list_channels.currentItem().text()
             url = self.current_channels[channel]
-            if self.chk_catchup.isChecked() and self.chk_catchup.isEnabled():
-                if self.pl.channels_details[url]["stream_id"]:
-                    stream = self.pl.channels_details[url]["stream_id"]
-                    server = self.pl.api_account["server_info"]["url"]
-                    protocol = self.pl.api_account["server_info"]["server_protocol"]
-                    port = self.pl.api_account["server_info"]["port"]
-                    username = self.pl.api_account["user_info"]["username"]
-                    password = self.pl.api_account["user_info"]["password"]
-                    date = self.date_start.text()
-                    time = self.time_start.text().replace(":", "-")
-                    duration = self.txt_duration.text()
-                    url = f"{protocol}://{server}:{port}/streaming/timeshift.php?username={username}&password={password}&stream={stream}&start={date}:{time}&duration={duration}"
+            if (
+                self.chk_catchup.isChecked()
+                and self.chk_catchup.isEnabled()
+                and self.pl.channels_details[url]["stream_id"]
+            ):
+                stream = self.pl.channels_details[url]["stream_id"]
+                server = self.pl.api_account["server_info"]["url"]
+                protocol = self.pl.api_account["server_info"]["server_protocol"]
+                port = self.pl.api_account["server_info"]["port"]
+                username = self.pl.api_account["user_info"]["username"]
+                password = self.pl.api_account["user_info"]["password"]
+                date = self.date_start.text()
+                time = self.time_start.text().replace(":", "-")
+                duration = self.txt_duration.text()
+                url = f"{protocol}://{server}:{port}/streaming/timeshift.php?username={username}&password={password}&stream={stream}&start={date}:{time}&duration={duration}"
             self.txt_url.setText(url)
 
     def update_epg(self, stream):
@@ -666,8 +670,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def select_epg(self):
         """When user selects a program in EPG, update the catchup settings."""
-        item = self.cmb_epg.currentData()
-        if item:
+        if item := self.cmb_epg.currentData():
             self.date_start.setDate(QtCore.QDate.fromString(item["start_date"], QtCore.Qt.ISODate))
             self.time_start.setTime(QtCore.QTime.fromString(item["start_time"]))
             self.txt_duration.setText(str(item["duration"] + self.config_add_minutes))
@@ -773,14 +776,16 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         """When a channel is selected."""
         self.show_loader()
         self.txt_url.setText("")
-        if self.list_channels_series.currentItem():
-            channel = self.list_channels_series.currentItem().text()
-            series_id = self.current_channels_series[channel]
-            self.current_episodes = self.pl.get_series(series_id)
-            self.list_episodes.setCurrentItem(None)
-            self.list_episodes.clear()
-            for e in self.current_episodes:
-                self.list_episodes.addItem(e)
+        if not self.list_channels_series.currentItem():
+            self.hide_loader()
+            return
+        channel = self.list_channels_series.currentItem().text()
+        series_id = self.current_channels_series[channel]
+        self.current_episodes = self.pl.get_series(series_id)
+        self.list_episodes.setCurrentItem(None)
+        self.list_episodes.clear()
+        for e in self.current_episodes:
+            self.list_episodes.addItem(e)
         self.hide_loader()
 
     def select_episode(self):
@@ -797,15 +802,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         url = self.txt_url.text()
         if self.player_process:
             # Kill the previous process because we don't want more than 1 player
-            try:
+            with contextlib.suppress(Exception):
                 process = psutil.Process(self.player_process.pid)
                 for proc in process.children(recursive=True):
-                    try:
+                    with contextlib.suppress(Exception):
                         proc.kill()
-                    except:
-                        pass
-            except:
-                pass
             self.player_process = None
         # Create a new process in a separated thread
         self.player_process = subprocess.Popen(
