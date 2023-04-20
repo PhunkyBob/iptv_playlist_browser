@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.5.1 (2023-04-20)
+- [BUGFIX] Process call on Linux. 
+
 ## 1.5.0 (2023-04-20)
 - [CHANGE] Use PySide6 instead of Qt5. 
 - [CHANGE] Converted into Python module. 

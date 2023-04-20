@@ -810,13 +810,11 @@ class MainWindow(QMainWindow):
                         proc.kill()
             self.player_process = None
         # Create a new process in a separated thread
-        param_url = url.replace("&", r"\&")
-        if platform.system() == "Windows":
-            param_url = url.replace("&", "^&")
         self.player_process = subprocess.Popen(
-            [self.config_player, param_url, self.config_player_params],
-            shell=True,
+            [self.config_player, url, self.config_player_params],
+            shell=False,
         )
+
 
     def show_loader(self, message: str = "LOADING..."):
         """Display the loader."""
