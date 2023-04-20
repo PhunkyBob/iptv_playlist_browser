@@ -139,3 +139,19 @@ env\Scripts\activate.bat
 pip install -U pip
 pip install -r requirements.txt
 ```
+
+### Compilation
+To create Python files from Qt `.ui` files: 
+```
+pyside6-uic generate_playlist.ui -o generate_playlist_pyside6.py
+pyside6-uic local_file.ui -o local_file_pyside6.py
+pyside6-uic main_ui.ui -o main_ui_pyside6.py
+pyside6-uic preferences.ui -o preferences_pyside6.py
+pyside6-uic remote_file.ui -o remote_file_pyside6.py
+pyside6-uic xtream_code.ui -o xtream_code_pyside6.py
+```
+
+To create Windows `.exe`file: 
+```
+pyinstaller --noconfirm --onefile --windowed --icon "resources\play-button.ico" --paths "ui" "iptv_playlist_browser_gui.py"
+```

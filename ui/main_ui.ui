@@ -21,7 +21,7 @@
   </property>
   <property name="windowIcon">
    <iconset>
-    <normaloff>../resources/play-button.png</normaloff>../resources/play-button.png</iconset>
+    <normaloff>./resources/play-button.png</normaloff>./resources/play-button.png</iconset>
   </property>
   <widget class="QWidget" name="centralwidget">
    <widget class="QTabWidget" name="tab_main">
@@ -529,7 +529,7 @@
   <action name="action_api">
    <property name="icon">
     <iconset>
-     <normaloff>../resources/login.png</normaloff>../resources/login.png</iconset>
+     <normaloff>./resources/login.png</normaloff>./resources/login.png</iconset>
    </property>
    <property name="text">
     <string>&amp;Xtream Code API...</string>
@@ -541,7 +541,7 @@
   <action name="action_Open_local_file">
    <property name="icon">
     <iconset>
-     <normaloff>../resources/folder.png</normaloff>../resources/folder.png</iconset>
+     <normaloff>./resources/folder.png</normaloff>./resources/folder.png</iconset>
    </property>
    <property name="text">
     <string>&amp;Open local file...</string>
@@ -553,7 +553,7 @@
   <action name="action_Open_remote_file">
    <property name="icon">
     <iconset>
-     <normaloff>../resources/link.png</normaloff>../resources/link.png</iconset>
+     <normaloff>./resources/link.png</normaloff>./resources/link.png</iconset>
    </property>
    <property name="text">
     <string>Open &amp;remote file...</string>
@@ -565,7 +565,7 @@
   <action name="action_Preferences">
    <property name="icon">
     <iconset>
-     <normaloff>../resources/gear.png</normaloff>../resources/gear.png</iconset>
+     <normaloff>./resources/gear.png</normaloff>./resources/gear.png</iconset>
    </property>
    <property name="text">
     <string>&amp;Preferences...</string>

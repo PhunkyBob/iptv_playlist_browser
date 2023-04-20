@@ -3,11 +3,9 @@
 This class allows to display the "Open local file" dialog box.
 """
 
-from PyQt5.QtWidgets import QDialog, QFileDialog
-from PyQt5.uic import loadUi
-from PyQt5 import QtCore
-import os
-import tools
+from PySide6.QtWidgets import QDialog, QFileDialog
+from PySide6 import QtCore
+from ui.generate_playlist_pyside6 import Ui_Dialog
 
 margin = 10
 
@@ -20,50 +18,52 @@ class GeneratePlaylist(QDialog):
 
     def __init__(self, parent=None, url=""):
         super().__init__(parent)
-        loadUi(tools.resource_path("ui/generate_playlist.ui"), self)
+        self.ui = Ui_Dialog()
+        self.ui.setupUi(self)
         self.setWindowFlags(self.windowFlags() & ~QtCore.Qt.WindowContextHelpButtonHint)
         self.setMinimumHeight(self.height())
         self.setMaximumHeight(self.height())
-        self.txt_url.setText(url)
+        self.ui.txt_url.setText(url)
         self.connect_signals_slots()
         self.verif_fields()
 
     def resizeEvent(self, *args):
         """Resize and move all elements when window is resized."""
         QDialog.resizeEvent(self, *args)
-        self.txt_url.resize(self.width() - 50 - self.btn_browse.width() - 2 * margin, 25)
-        self.btn_ok.move(
-            self.width() - self.btn_ok.width() - self.btn_cancel.width() - 2 * margin,
-            self.height() - self.btn_ok.height() - margin,
+        self.ui.txt_url.resize(self.width() - 50 - self.ui.btn_browse.width() - 2 * margin, 25)
+        self.ui.btn_ok.move(
+            self.width() - self.ui.btn_ok.width() - self.ui.btn_cancel.width() - 2 * margin,
+            self.height() - self.ui.btn_ok.height() - margin,
         )
-        self.btn_cancel.move(
-            self.width() - self.btn_cancel.width() - 1 * margin, self.height() - self.btn_cancel.height() - margin
+        self.ui.btn_cancel.move(
+            self.width() - self.ui.btn_cancel.width() - 1 * margin,
+            self.height() - self.ui.btn_cancel.height() - margin,
         )
-        self.btn_browse.move(self.width() - self.btn_browse.width() - 1 * margin, 20)
+        self.ui.btn_browse.move(self.width() - self.ui.btn_browse.width() - 1 * margin, 20)
 
     def connect_signals_slots(self):
         """Link elements signals to functions."""
-        self.btn_cancel.clicked.connect(self.close)
-        self.btn_ok.clicked.connect(self.click_ok)
-        self.btn_browse.clicked.connect(self.open_filename_dialog)
-        self.txt_url.textChanged.connect(self.verif_fields)
-        self.chk_live.stateChanged.connect(self.verif_fields)
-        self.chk_vod.stateChanged.connect(self.verif_fields)
-        self.chk_series.stateChanged.connect(self.verif_fields)
+        self.ui.btn_cancel.clicked.connect(self.close)
+        self.ui.btn_ok.clicked.connect(self.click_ok)
+        self.ui.btn_browse.clicked.connect(self.open_filename_dialog)
+        self.ui.txt_url.textChanged.connect(self.verif_fields)
+        self.ui.chk_live.stateChanged.connect(self.verif_fields)
+        self.ui.chk_vod.stateChanged.connect(self.verif_fields)
+        self.ui.chk_series.stateChanged.connect(self.verif_fields)
 
     def click_ok(self):
         """When button "OK" is clicked, save the values."""
-        self.url = self.txt_url.text()
-        self.export_live = self.chk_live.isChecked()
-        self.export_vod = self.chk_vod.isChecked()
-        self.export_series = self.chk_series.isChecked()
+        self.url = self.ui.txt_url.text()
+        self.export_live = self.ui.chk_live.isChecked()
+        self.export_vod = self.ui.chk_vod.isChecked()
+        self.export_series = self.ui.chk_series.isChecked()
         self.close()
 
     def verif_fields(self):
         """Enable the "OK" button only when all fields are correct."""
-        self.btn_ok.setEnabled(
-            len(self.txt_url.text()) > 0
-            and any([self.chk_live.isChecked(), self.chk_vod.isChecked(), self.chk_series.isChecked()])
+        self.ui.btn_ok.setEnabled(
+            len(self.ui.txt_url.text()) > 0
+            and any([self.ui.chk_live.isChecked(), self.ui.chk_vod.isChecked(), self.ui.chk_series.isChecked()])
         )
 
     def open_filename_dialog(self):
@@ -78,4 +78,4 @@ class GeneratePlaylist(QDialog):
             options=options,
         )
         if filename:
-            self.txt_url.setText(filename)
+            self.ui.txt_url.setText(filename)

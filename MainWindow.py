@@ -4,15 +4,14 @@ This class allows to display the main application window.
 """
 
 
-from PyQt5.QtWidgets import QMainWindow, QMessageBox, QFileDialog
-from PyQt5.QtGui import QImage, QPixmap
-from PyQt5.QtCore import Qt
-from main_ui import Ui_MainWindow
-from PyQt5.uic import loadUi
+from PySide6.QtWidgets import QMainWindow, QMessageBox, QFileDialog
+from PySide6.QtGui import QImage, QPixmap
+from PySide6.QtCore import Qt
+from ui.main_ui_pyside6 import Ui_MainWindow
 from playlist import Playlist
 import subprocess
 import psutil
-from PyQt5 import QtCore, QtGui
+from PySide6 import QtCore, QtGui
 from datetime import datetime
 import configparser
 import contextlib
@@ -23,15 +22,15 @@ from OpenRemoteFile import OpenRemoteFile
 from OpenXtream import OpenXtream
 from GeneratePlaylist import GeneratePlaylist
 import requests
-import tools
 from typing import Dict, Set
 from datetime import datetime
+import platform
 
 MARGIN = 10
 CONFIG_POSSIBLE_FALSE: Set = {"0", "", "n", "no", "false"}
 
 
-class MainWindow(QMainWindow, Ui_MainWindow):
+class MainWindow(QMainWindow):
     config_file: str = "config.ini"
     main_title: str = "IPTV Playlist Browser"
     git_repo_url: str = "https://github.com/PhunkyBob/iptv_playlist_browser"
@@ -65,12 +64,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     latest_remote: str = ""
 
     def __init__(self, parent=None, version="unkwnown"):
-        super().__init__(parent)
-        loadUi(tools.resource_path("ui/main_ui.ui"), self)
-        # self.setupUi(self)
+        super(MainWindow, self).__init__()
+        # self.ui = loadUi("ui/main_ui.ui")
+        self.ui = Ui_MainWindow()
+        self.ui.setupUi(self)
         self.connect_signals_slots()
         self.pl = None
-        self.lbl_wait.hide()
+        self.ui.lbl_wait.hide()
         self.version = version
 
         # Set default values
@@ -86,15 +86,15 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def set_default_values(self) -> None:
         now = datetime.now()
         self.setWindowTitle(f"{self.main_title}")
-        self.date_start.setDate(QtCore.QDate(now.year, now.month, now.day))
-        self.time_start.setTime(QtCore.QTime(now.hour, (now.minute // 5) * 5))
-        self.txt_duration.setText("80")
-        self.chk_catchup.setEnabled(False)
-        self.date_start.setEnabled(False)
-        self.time_start.setEnabled(False)
-        self.btn_watch.setEnabled(False)
+        self.ui.date_start.setDate(QtCore.QDate(now.year, now.month, now.day))
+        self.ui.time_start.setTime(QtCore.QTime(now.hour, (now.minute // 5) * 5))
+        self.ui.txt_duration.setText("80")
+        self.ui.chk_catchup.setEnabled(False)
+        self.ui.date_start.setEnabled(False)
+        self.ui.time_start.setEnabled(False)
+        self.ui.btn_watch.setEnabled(False)
         self.onlyInt = QtGui.QIntValidator()
-        self.txt_duration.setValidator(self.onlyInt)
+        self.ui.txt_duration.setValidator(self.onlyInt)
 
     def read_config(self) -> None:
         config = configparser.ConfigParser()
@@ -134,109 +134,109 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         QMainWindow.resizeEvent(self, *args)
         tab_width = int(self.width() - 2 * MARGIN)
         tab_height = int(self.height() - 140)
-        self.tab_main.resize(tab_width, tab_height)
+        self.ui.tab_main.resize(tab_width, tab_height)
         list_width = int((tab_width - 4 * MARGIN) / 3)
         # Live
         list_height = tab_height - 140
-        self.list_categ_1.resize(list_width, list_height)
-        self.list_categ_2.resize(list_width, list_height)
-        self.list_channels.resize(list_width, list_height)
-        self.txt_filter_groups.resize(list_width - 110, 25)
-        self.txt_filter_categories.resize(list_width - 110, 25)
-        self.txt_filter_channels.resize(list_width - 110, 25)
-        self.frm_catchup.resize(tab_width - 2 * MARGIN, self.frm_catchup.height())
-        self.cmb_epg.resize(self.frm_catchup.width() - 410 - MARGIN, self.cmb_epg.height())
-        self.list_categ_1.move(1 * MARGIN + 0 * list_width, 40)
-        self.list_categ_2.move(2 * MARGIN + 1 * list_width, 40)
-        self.list_channels.move(3 * MARGIN + 2 * list_width, 40)
-        self.txt_filter_groups.move(self.list_categ_1.pos().x() + 110, MARGIN)
-        self.txt_filter_categories.move(self.list_categ_2.pos().x() + 110, MARGIN)
-        self.txt_filter_channels.move(self.list_channels.pos().x() + 110, MARGIN)
+        self.ui.list_categ_1.resize(list_width, list_height)
+        self.ui.list_categ_2.resize(list_width, list_height)
+        self.ui.list_channels.resize(list_width, list_height)
+        self.ui.txt_filter_groups.resize(list_width - 110, 25)
+        self.ui.txt_filter_categories.resize(list_width - 110, 25)
+        self.ui.txt_filter_channels.resize(list_width - 110, 25)
+        self.ui.frm_catchup.resize(tab_width - 2 * MARGIN, self.ui.frm_catchup.height())
+        self.ui.cmb_epg.resize(self.ui.frm_catchup.width() - 410 - MARGIN, self.ui.cmb_epg.height())
+        self.ui.list_categ_1.move(1 * MARGIN + 0 * list_width, 40)
+        self.ui.list_categ_2.move(2 * MARGIN + 1 * list_width, 40)
+        self.ui.list_channels.move(3 * MARGIN + 2 * list_width, 40)
+        self.ui.txt_filter_groups.move(self.ui.list_categ_1.pos().x() + 110, MARGIN)
+        self.ui.txt_filter_categories.move(self.ui.list_categ_2.pos().x() + 110, MARGIN)
+        self.ui.txt_filter_channels.move(self.ui.list_channels.pos().x() + 110, MARGIN)
 
-        self.frm_catchup.move(MARGIN, 40 + list_height + 2 * MARGIN)
-        self.lbl_groups.move(self.list_categ_1.pos().x(), 15)
-        self.lbl_categories.move(self.list_categ_2.pos().x(), 15)
-        self.lbl_channels.move(self.list_channels.pos().x(), 15)
+        self.ui.frm_catchup.move(MARGIN, 40 + list_height + 2 * MARGIN)
+        self.ui.lbl_groups.move(self.ui.list_categ_1.pos().x(), 15)
+        self.ui.lbl_categories.move(self.ui.list_categ_2.pos().x(), 15)
+        self.ui.lbl_channels.move(self.ui.list_channels.pos().x(), 15)
 
         # VOD
         list_height = tab_height - 90
-        self.list_categ_vod.resize(list_width, list_height)
-        self.list_channels_vod.resize(list_width, list_height)
-        self.picture_vod.resize(list_width, list_height)
-        self.txt_filter_groups_vod.resize(list_width - 110, 25)
-        self.txt_filter_channels_vod.resize(list_width - 110, 25)
-        self.list_categ_vod.move(1 * MARGIN + 0 * list_width, 40)
-        self.list_channels_vod.move(2 * MARGIN + 1 * list_width, 40)
-        self.picture_vod.move(3 * MARGIN + 2 * list_width, 40)
-        self.txt_filter_groups_vod.move(self.list_categ_vod.pos().x() + 110, MARGIN)
-        self.txt_filter_channels_vod.move(self.list_channels_vod.pos().x() + 110, MARGIN)
-        self.lbl_groups_vod.move(self.list_categ_vod.pos().x(), 15)
-        self.lbl_channels_vod.move(self.list_channels_vod.pos().x(), 15)
+        self.ui.list_categ_vod.resize(list_width, list_height)
+        self.ui.list_channels_vod.resize(list_width, list_height)
+        self.ui.picture_vod.resize(list_width, list_height)
+        self.ui.txt_filter_groups_vod.resize(list_width - 110, 25)
+        self.ui.txt_filter_channels_vod.resize(list_width - 110, 25)
+        self.ui.list_categ_vod.move(1 * MARGIN + 0 * list_width, 40)
+        self.ui.list_channels_vod.move(2 * MARGIN + 1 * list_width, 40)
+        self.ui.picture_vod.move(3 * MARGIN + 2 * list_width, 40)
+        self.ui.txt_filter_groups_vod.move(self.ui.list_categ_vod.pos().x() + 110, MARGIN)
+        self.ui.txt_filter_channels_vod.move(self.ui.list_channels_vod.pos().x() + 110, MARGIN)
+        self.ui.lbl_groups_vod.move(self.ui.list_categ_vod.pos().x(), 15)
+        self.ui.lbl_channels_vod.move(self.ui.list_channels_vod.pos().x(), 15)
 
         # Series
         list_height = tab_height - 90
-        self.list_categ_series.resize(list_width, list_height)
-        self.list_channels_series.resize(list_width, list_height)
-        self.list_episodes.resize(list_width, list_height)
-        self.txt_filter_groups_series.resize(list_width - 110, 25)
-        self.txt_filter_channels_series.resize(list_width - 110, 25)
-        self.list_categ_series.move(1 * MARGIN + 0 * list_width, 40)
-        self.list_channels_series.move(2 * MARGIN + 1 * list_width, 40)
-        self.list_episodes.move(3 * MARGIN + 2 * list_width, 40)
-        self.txt_filter_groups_series.move(self.list_categ_series.pos().x() + 110, MARGIN)
-        self.txt_filter_channels_series.move(self.list_channels_series.pos().x() + 110, MARGIN)
-        self.lbl_groups_series.move(self.list_categ_series.pos().x(), 15)
-        self.lbl_channels_series.move(self.list_channels_series.pos().x(), 15)
+        self.ui.list_categ_series.resize(list_width, list_height)
+        self.ui.list_channels_series.resize(list_width, list_height)
+        self.ui.list_episodes.resize(list_width, list_height)
+        self.ui.txt_filter_groups_series.resize(list_width - 110, 25)
+        self.ui.txt_filter_channels_series.resize(list_width - 110, 25)
+        self.ui.list_categ_series.move(1 * MARGIN + 0 * list_width, 40)
+        self.ui.list_channels_series.move(2 * MARGIN + 1 * list_width, 40)
+        self.ui.list_episodes.move(3 * MARGIN + 2 * list_width, 40)
+        self.ui.txt_filter_groups_series.move(self.ui.list_categ_series.pos().x() + 110, MARGIN)
+        self.ui.txt_filter_channels_series.move(self.ui.list_channels_series.pos().x() + 110, MARGIN)
+        self.ui.lbl_groups_series.move(self.ui.list_categ_series.pos().x(), 15)
+        self.ui.lbl_channels_series.move(self.ui.list_channels_series.pos().x(), 15)
 
         # Watch
-        self.txt_url.resize(tab_width - self.btn_watch.width() - MARGIN, 25)
-        self.txt_url.move(MARGIN, tab_height + 2 * MARGIN)
-        self.btn_watch.move(self.width() - self.btn_watch.width() - MARGIN, tab_height + 2 * MARGIN)
+        self.ui.txt_url.resize(tab_width - self.ui.btn_watch.width() - MARGIN, 25)
+        self.ui.txt_url.move(MARGIN, tab_height + 2 * MARGIN)
+        self.ui.btn_watch.move(self.width() - self.ui.btn_watch.width() - MARGIN, tab_height + 2 * MARGIN)
 
     def connect_signals_slots(self):
         """Link elements signals to functions."""
-        self.action_Exit.triggered.connect(self.close)
-        self.action_Open_local_file.triggered.connect(self.open_local_file)
-        self.action_Open_remote_file.triggered.connect(self.open_remote_file)
-        self.action_api.triggered.connect(self.open_xtream)
-        self.action_About.triggered.connect(self.about)
-        self.action_Preferences.triggered.connect(self.preferences)
-        self.action_Account_infos.triggered.connect(self.display_account_infos)
-        self.action_Download_playlist_lite.triggered.connect(self.download_playlist_lite)
-        self.action_Download_playlist_full.triggered.connect(self.download_playlist_full)
-        self.action_Generate_playlist.triggered.connect(self.generate_playlist)
-        self.btn_watch.clicked.connect(self.watch)
-        self.txt_url.textChanged.connect(self.url_changed)
-        self.tab_main.currentChanged.connect(self.tab_changed)
+        self.ui.action_Exit.triggered.connect(self.close)
+        self.ui.action_Open_local_file.triggered.connect(self.open_local_file)
+        self.ui.action_Open_remote_file.triggered.connect(self.open_remote_file)
+        self.ui.action_api.triggered.connect(self.open_xtream)
+        self.ui.action_About.triggered.connect(self.about)
+        self.ui.action_Preferences.triggered.connect(self.preferences)
+        self.ui.action_Account_infos.triggered.connect(self.display_account_infos)
+        self.ui.action_Download_playlist_lite.triggered.connect(self.download_playlist_lite)
+        self.ui.action_Download_playlist_full.triggered.connect(self.download_playlist_full)
+        self.ui.action_Generate_playlist.triggered.connect(self.generate_playlist)
+        self.ui.btn_watch.clicked.connect(self.watch)
+        self.ui.txt_url.textChanged.connect(self.url_changed)
+        self.ui.tab_main.currentChanged.connect(self.tab_changed)
 
         # Live
-        self.list_categ_1.itemSelectionChanged.connect(self.select_group)
-        self.list_categ_2.itemSelectionChanged.connect(self.select_category)
-        self.list_channels.itemSelectionChanged.connect(self.select_channel)
-        self.list_channels.doubleClicked.connect(self.watch)
-        self.txt_filter_groups.textChanged.connect(self.update_groups)
-        self.txt_filter_categories.textChanged.connect(self.update_categories)
-        self.txt_filter_channels.textChanged.connect(self.update_channels)
-        self.chk_catchup.stateChanged.connect(self.change_catchup_settings)
-        self.date_start.dateChanged.connect(self.change_catchup_settings)
-        self.time_start.timeChanged.connect(self.change_catchup_settings)
-        self.txt_duration.textChanged.connect(self.change_catchup_settings)
-        self.cmb_epg.currentIndexChanged.connect(self.select_epg)
+        self.ui.list_categ_1.itemSelectionChanged.connect(self.select_group)
+        self.ui.list_categ_2.itemSelectionChanged.connect(self.select_category)
+        self.ui.list_channels.itemSelectionChanged.connect(self.select_channel)
+        self.ui.list_channels.doubleClicked.connect(self.watch)
+        self.ui.txt_filter_groups.textChanged.connect(self.update_groups)
+        self.ui.txt_filter_categories.textChanged.connect(self.update_categories)
+        self.ui.txt_filter_channels.textChanged.connect(self.update_channels)
+        self.ui.chk_catchup.stateChanged.connect(self.change_catchup_settings)
+        self.ui.date_start.dateChanged.connect(self.change_catchup_settings)
+        self.ui.time_start.timeChanged.connect(self.change_catchup_settings)
+        self.ui.txt_duration.textChanged.connect(self.change_catchup_settings)
+        self.ui.cmb_epg.currentIndexChanged.connect(self.select_epg)
 
         # VOD
-        self.list_categ_vod.itemSelectionChanged.connect(self.select_group_vod)
-        self.list_channels_vod.itemSelectionChanged.connect(self.select_channel_vod)
-        self.list_channels_vod.doubleClicked.connect(self.watch)
-        self.txt_filter_groups_vod.textChanged.connect(self.update_groups_vod)
-        self.txt_filter_channels_vod.textChanged.connect(self.update_channels_vod)
+        self.ui.list_categ_vod.itemSelectionChanged.connect(self.select_group_vod)
+        self.ui.list_channels_vod.itemSelectionChanged.connect(self.select_channel_vod)
+        self.ui.list_channels_vod.doubleClicked.connect(self.watch)
+        self.ui.txt_filter_groups_vod.textChanged.connect(self.update_groups_vod)
+        self.ui.txt_filter_channels_vod.textChanged.connect(self.update_channels_vod)
 
         # Series
-        self.list_categ_series.itemSelectionChanged.connect(self.select_group_series)
-        self.list_channels_series.itemSelectionChanged.connect(self.select_channel_series)
-        self.list_episodes.itemSelectionChanged.connect(self.select_episode)
-        self.list_episodes.doubleClicked.connect(self.watch)
-        self.txt_filter_groups_series.textChanged.connect(self.update_groups_series)
-        self.txt_filter_channels_series.textChanged.connect(self.update_channels_series)
+        self.ui.list_categ_series.itemSelectionChanged.connect(self.select_group_series)
+        self.ui.list_channels_series.itemSelectionChanged.connect(self.select_channel_series)
+        self.ui.list_episodes.itemSelectionChanged.connect(self.select_episode)
+        self.ui.list_episodes.doubleClicked.connect(self.watch)
+        self.ui.txt_filter_groups_series.textChanged.connect(self.update_groups_series)
+        self.ui.txt_filter_channels_series.textChanged.connect(self.update_channels_series)
 
     def preferences(self):
         """Open "preferences" dialog."""
@@ -251,6 +251,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.config_add_minutes,
         )
         dialog.exec()
+        # dialog.show()
         if dialog.validated:
             # Dialog closed with "OK" --> save parameters
             self.config_player = dialog.player
@@ -358,17 +359,17 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.current_channels = {}
         self.current_categ_vod = ""
         self.current_channels_vod = {}
-        self.list_categ_1.setCurrentItem(None)
-        self.list_categ_1.clear()
-        self.list_categ_2.setCurrentItem(None)
-        self.list_categ_2.clear()
-        self.list_channels.setCurrentItem(None)
-        self.list_channels.clear()
-        self.list_categ_vod.setCurrentItem(None)
-        self.list_categ_vod.clear()
-        self.list_channels_vod.setCurrentItem(None)
-        self.list_channels_vod.clear()
-        self.action_Generate_playlist.setEnabled(True)
+        self.ui.list_categ_1.setCurrentItem(None)
+        self.ui.list_categ_1.clear()
+        self.ui.list_categ_2.setCurrentItem(None)
+        self.ui.list_categ_2.clear()
+        self.ui.list_channels.setCurrentItem(None)
+        self.ui.list_channels.clear()
+        self.ui.list_categ_vod.setCurrentItem(None)
+        self.ui.list_categ_vod.clear()
+        self.ui.list_channels_vod.setCurrentItem(None)
+        self.ui.list_channels_vod.clear()
+        self.ui.action_Generate_playlist.setEnabled(True)
         self.update_groups()
         self.update_groups_vod()
         self.update_groups_series()
@@ -379,9 +380,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.hide_loader()
 
     def set_catchup_enabled(self, enabled: bool):
-        self.chk_catchup.setEnabled(enabled)
-        self.date_start.setEnabled(enabled)
-        self.time_start.setEnabled(enabled)
+        self.ui.chk_catchup.setEnabled(enabled)
+        self.ui.date_start.setEnabled(enabled)
+        self.ui.time_start.setEnabled(enabled)
 
     def download_playlist(self, playlist_plus: bool = False):
         """Download playlist from xtream."""
@@ -426,9 +427,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.show_loader("Generating playlist...")
             self.pl.generate_m3u(
                 output_file=dialog.url,
-                export_live=dialog.chk_live.isChecked(),
-                export_vod=dialog.chk_vod.isChecked(),
-                export_series=dialog.chk_series.isChecked(),
+                export_live=dialog.ui.chk_live.isChecked(),
+                export_vod=dialog.ui.chk_vod.isChecked(),
+                export_series=dialog.ui.chk_series.isChecked(),
             )
             self.hide_loader()
             msgBox = QMessageBox()
@@ -501,91 +502,91 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         return " (latest)" if latest_version == self.version else f" ({latest_version} available)"
 
     def tab_changed(self):
-        self.txt_url.setText("")
-        if self.tab_main.currentIndex() == 0 and self.list_channels.currentItem():
-            self.select_channel()
-        if self.tab_main.currentIndex() == 1 and self.list_channels_vod.currentItem():
-            self.select_channel_vod()
-        if self.tab_main.currentIndex() == 2 and self.list_channels_series.currentItem():
-            self.select_episode()
+        self.ui.txt_url.setText("")
+        if self.ui.tab_main.currentIndex() == 0 and self.ui.list_channels.currentItem():
+            self.ui.select_channel()
+        if self.ui.tab_main.currentIndex() == 1 and self.ui.list_channels_vod.currentItem():
+            self.ui.select_channel_vod()
+        if self.ui.tab_main.currentIndex() == 2 and self.ui.list_channels_series.currentItem():
+            self.ui.select_episode()
 
     def update_groups(self):
         """Update the list "groups" with available / filtered elements."""
         # Live channels
-        fltr = self.txt_filter_groups.text()
-        self.list_categ_1.setCurrentItem(None)
-        self.list_categ_1.clear()
+        fltr = self.ui.txt_filter_groups.text()
+        self.ui.list_categ_1.setCurrentItem(None)
+        self.ui.list_categ_1.clear()
         for categ_1 in self.pl.channels:
             if fltr.lower() in categ_1.lower() and len(self.pl.channels[categ_1]) > 0:
-                self.list_categ_1.addItem(categ_1)
-        self.lbl_groups.setText(f"Groups ({self.list_categ_1.count()})")
+                self.ui.list_categ_1.addItem(categ_1)
+        self.ui.lbl_groups.setText(f"Groups ({self.ui.list_categ_1.count()})")
 
     def update_groups_vod(self):
         # VOD
-        fltr = self.txt_filter_groups_vod.text()
-        self.list_categ_vod.setCurrentItem(None)
-        self.list_categ_vod.clear()
+        fltr = self.ui.txt_filter_groups_vod.text()
+        self.ui.list_categ_vod.setCurrentItem(None)
+        self.ui.list_categ_vod.clear()
         for categ_1 in self.pl.vod:
             if fltr.lower() in categ_1.lower() and len(self.pl.vod[categ_1]) > 0:
-                self.list_categ_vod.addItem(categ_1)
+                self.ui.list_categ_vod.addItem(categ_1)
         self.update_channels_vod()
-        self.lbl_groups_vod.setText(f"Groups ({self.list_categ_vod.count()})")
+        self.ui.lbl_groups_vod.setText(f"Groups ({self.ui.list_categ_vod.count()})")
 
     def update_groups_series(self):
         # Series
-        fltr = self.txt_filter_groups_series.text()
-        self.list_categ_series.setCurrentItem(None)
-        self.list_categ_series.clear()
+        fltr = self.ui.txt_filter_groups_series.text()
+        self.ui.list_categ_series.setCurrentItem(None)
+        self.ui.list_categ_series.clear()
         for categ_1 in self.pl.series:
             if fltr.lower() in categ_1.lower() and len(self.pl.series[categ_1]) > 0:
-                self.list_categ_series.addItem(categ_1)
+                self.ui.list_categ_series.addItem(categ_1)
         self.update_channels_series()
-        self.lbl_groups_series.setText(f"Groups ({self.list_categ_series.count()})")
+        self.ui.lbl_groups_series.setText(f"Groups ({self.ui.list_categ_series.count()})")
 
     def update_categories(self):
         """Update the list "categories" with available / filtered elements."""
-        fltr = self.txt_filter_categories.text()
-        self.list_categ_2.setCurrentItem(None)
-        self.list_categ_2.clear()
+        fltr = self.ui.txt_filter_categories.text()
+        self.ui.list_categ_2.setCurrentItem(None)
+        self.ui.list_categ_2.clear()
         if self.current_categ_1:
             for categ_2 in self.pl.channels[self.current_categ_1]:
                 if fltr.lower() in categ_2.lower() and len(self.pl.channels[self.current_categ_1][categ_2]) > 0:
-                    self.list_categ_2.addItem(categ_2)
-        self.lbl_categories.setText(f"Categories ({self.list_categ_2.count()})")
+                    self.ui.list_categ_2.addItem(categ_2)
+        self.ui.lbl_categories.setText(f"Categories ({self.ui.list_categ_2.count()})")
 
     def update_channels(self):
         """Update the list "channels" with available / filtered elements."""
-        fltr = self.txt_filter_channels.text()
-        self.list_channels.setCurrentItem(None)
-        self.list_channels.clear()
+        fltr = self.ui.txt_filter_channels.text()
+        self.ui.list_channels.setCurrentItem(None)
+        self.ui.list_channels.clear()
         self.current_channels = {}
 
         if self.current_categ_2:
             for channel in self.pl.channels[self.current_categ_1][self.current_categ_2]:
                 if fltr.lower() in channel.lower():
-                    self.list_channels.addItem(channel)
+                    self.ui.list_channels.addItem(channel)
                     self.current_channels[channel] = self.pl.channels[self.current_categ_1][self.current_categ_2][
                         channel
                     ]
         else:
             # If no category is selected, display all available channels.
-            for i in range(self.list_categ_2.count()):
-                categ_2 = self.list_categ_2.item(i).text()
+            for i in range(self.ui.list_categ_2.count()):
+                categ_2 = self.ui.list_categ_2.item(i).text()
                 for channel in self.pl.channels[self.current_categ_1][categ_2]:
                     if fltr.lower() in channel.lower():
-                        self.list_channels.addItem(channel)
+                        self.ui.list_channels.addItem(channel)
                         self.current_channels[channel] = self.pl.channels[self.current_categ_1][categ_2][channel]
-        self.lbl_channels.setText(f"Channels ({self.list_channels.count()})")
+        self.ui.lbl_channels.setText(f"Channels ({self.ui.list_channels.count()})")
 
     def select_group(self):
         """When a group is selected."""
         self.show_loader()
         self.current_categ_1 = ""
-        if self.list_categ_1.currentItem():
-            self.current_categ_1 = self.list_categ_1.currentItem().text()
+        if self.ui.list_categ_1.currentItem():
+            self.current_categ_1 = self.ui.list_categ_1.currentItem().text()
         self.current_categ_2 = ""
-        self.list_categ_2.setCurrentItem(None)
-        self.list_categ_2.clear()
+        self.ui.list_categ_2.setCurrentItem(None)
+        self.ui.list_categ_2.clear()
         self.update_categories()
         self.update_channels()
         self.hide_loader()
@@ -593,58 +594,58 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def select_category(self):
         """When a category is selected."""
         self.show_loader()
-        self.list_channels.setCurrentItem(None)
-        self.list_channels.clear()
-        self.txt_url.setText("")
-        if self.list_categ_2.currentItem():
-            self.current_categ_2 = self.list_categ_2.currentItem().text()
+        self.ui.list_channels.setCurrentItem(None)
+        self.ui.list_channels.clear()
+        self.ui.txt_url.setText("")
+        if self.ui.list_categ_2.currentItem():
+            self.current_categ_2 = self.ui.list_categ_2.currentItem().text()
             # print(self.current_categ_2)
             self.update_channels()
         self.hide_loader()
 
     def block_epg_enable(self, status):
-        self.chk_catchup.setEnabled(status)
-        self.date_start.setEnabled(status)
-        self.time_start.setEnabled(status)
-        self.txt_duration.setEnabled(status)
-        self.cmb_epg.setEnabled(status)
+        self.ui.chk_catchup.setEnabled(status)
+        self.ui.date_start.setEnabled(status)
+        self.ui.time_start.setEnabled(status)
+        self.ui.txt_duration.setEnabled(status)
+        self.ui.cmb_epg.setEnabled(status)
 
     def select_channel(self):
         """When a channel is selected."""
         self.show_loader()
-        if self.list_channels.currentItem():
-            channel = self.list_channels.currentItem().text()
+        if self.ui.list_channels.currentItem():
+            channel = self.ui.list_channels.currentItem().text()
             url = self.current_channels[channel]
             # Enable / disable catchup
             self.block_epg_enable(False)
-            self.lbl_catchup.setText("No catchup available")
+            self.ui.lbl_catchup.setText("No catchup available")
             if url in self.pl.channels_details and self.pl.channels_details[url]["tv_archive"]:
                 self.block_epg_enable(True)
-                self.lbl_catchup.setText("Catchup available")
+                self.ui.lbl_catchup.setText("Catchup available")
                 if self.pl.channels_details[url]["stream_id"]:
                     self.update_epg(self.pl.channels_details[url]["stream_id"])
                 else:
-                    self.cmb_epg.clear()
+                    self.ui.cmb_epg.clear()
             else:
-                self.cmb_epg.clear()
+                self.ui.cmb_epg.clear()
 
             self.change_catchup_settings()
         self.hide_loader()
 
     def change_catchup_settings(self):
         """Decide what URL should be displayed between live and catchup."""
-        show_catchup = self.chk_catchup.isChecked()
-        self.date_start.setVisible(show_catchup)
-        self.time_start.setVisible(show_catchup)
-        self.txt_duration.setVisible(show_catchup)
-        self.cmb_epg.setVisible(show_catchup)
+        show_catchup = self.ui.chk_catchup.isChecked()
+        self.ui.date_start.setVisible(show_catchup)
+        self.ui.time_start.setVisible(show_catchup)
+        self.ui.txt_duration.setVisible(show_catchup)
+        self.ui.cmb_epg.setVisible(show_catchup)
 
-        if self.list_channels.currentItem():
-            channel = self.list_channels.currentItem().text()
+        if self.ui.list_channels.currentItem():
+            channel = self.ui.list_channels.currentItem().text()
             url = self.current_channels[channel]
             if (
-                self.chk_catchup.isChecked()
-                and self.chk_catchup.isEnabled()
+                self.ui.chk_catchup.isChecked()
+                and self.ui.chk_catchup.isEnabled()
                 and self.pl.channels_details[url]["stream_id"]
             ):
                 stream = self.pl.channels_details[url]["stream_id"]
@@ -653,81 +654,81 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 port = self.pl.api_account["server_info"]["port"]
                 username = self.pl.api_account["user_info"]["username"]
                 password = self.pl.api_account["user_info"]["password"]
-                date = self.date_start.text()
-                time = self.time_start.text().replace(":", "-")
-                duration = self.txt_duration.text()
+                date = self.ui.date_start.text()
+                time = self.ui.time_start.text().replace(":", "-")
+                duration = self.ui.txt_duration.text()
                 url = f"{protocol}://{server}:{port}/streaming/timeshift.php?username={username}&password={password}&stream={stream}&start={date}:{time}&duration={duration}"
-            self.txt_url.setText(url)
+            self.ui.txt_url.setText(url)
 
     def update_epg(self, stream):
         """Update the EPG for current channel and add elements in the list."""
         self.pl.update_epg(stream)
-        self.cmb_epg.clear()
+        self.ui.cmb_epg.clear()
         if stream in self.pl.channels_epg:
-            self.cmb_epg.addItem("...")
+            self.ui.cmb_epg.addItem("...")
             for elem in reversed(sorted(self.pl.channels_epg[stream].keys())):
-                self.cmb_epg.addItem(elem, self.pl.channels_epg[stream][elem])
+                self.ui.cmb_epg.addItem(elem, self.pl.channels_epg[stream][elem])
 
     def select_epg(self):
         """When user selects a program in EPG, update the catchup settings."""
-        if item := self.cmb_epg.currentData():
-            self.date_start.setDate(QtCore.QDate.fromString(item["start_date"], QtCore.Qt.ISODate))
-            self.time_start.setTime(QtCore.QTime.fromString(item["start_time"]))
-            self.txt_duration.setText(str(item["duration"] + self.config_add_minutes))
+        if item := self.ui.cmb_epg.currentData():
+            self.ui.date_start.setDate(QtCore.QDate.fromString(item["start_date"], QtCore.Qt.ISODate))
+            self.ui.time_start.setTime(QtCore.QTime.fromString(item["start_time"]))
+            self.ui.txt_duration.setText(str(item["duration"] + self.config_add_minutes))
             self.change_catchup_settings()
 
     def select_group_vod(self):
         """When a group is selected."""
         self.show_loader()
-        self.list_channels_vod.setCurrentItem(None)
-        self.list_channels_vod.clear()
+        self.ui.list_channels_vod.setCurrentItem(None)
+        self.ui.list_channels_vod.clear()
         self.current_categ_vod = ""
-        self.txt_url.setText("")
-        self.picture_vod.clear()
-        if self.list_categ_vod.currentItem():
-            self.current_categ_vod = self.list_categ_vod.currentItem().text()
+        self.ui.txt_url.setText("")
+        self.ui.picture_vod.clear()
+        if self.ui.list_categ_vod.currentItem():
+            self.current_categ_vod = self.ui.list_categ_vod.currentItem().text()
             # print(self.current_categ_2)
             self.update_channels_vod()
         self.hide_loader()
 
     def update_channels_vod(self):
         """Update the list "channels" with available / filtered elements."""
-        fltr = self.txt_filter_channels_vod.text()
-        self.list_channels_vod.setCurrentItem(None)
-        self.list_channels_vod.clear()
+        fltr = self.ui.txt_filter_channels_vod.text()
+        self.ui.list_channels_vod.setCurrentItem(None)
+        self.ui.list_channels_vod.clear()
         self.current_channels_vod = {}
-        self.picture_vod.clear()
-        self.txt_url.setText("")
+        self.ui.picture_vod.clear()
+        self.ui.txt_url.setText("")
         if self.current_categ_vod:
             for channel in self.pl.vod[self.current_categ_vod]["OTHERS"]:
                 if fltr.lower() in channel.lower():
-                    self.list_channels_vod.addItem(channel)
+                    self.ui.list_channels_vod.addItem(channel)
                     self.current_channels_vod[channel] = self.pl.vod[self.current_categ_vod]["OTHERS"][channel]
         else:
             # If no category is selected, display all available channels.
-            for i in range(self.list_categ_vod.count()):
-                categ_vod = self.list_categ_vod.item(i).text()
+            for i in range(self.ui.list_categ_vod.count()):
+                categ_vod = self.ui.list_categ_vod.item(i).text()
                 for channel in self.pl.vod[categ_vod]["OTHERS"]:
                     if fltr.lower() in channel.lower():
-                        self.list_channels_vod.addItem(channel)
+                        self.ui.list_channels_vod.addItem(channel)
                         self.current_channels_vod[channel] = self.pl.vod[categ_vod]["OTHERS"][channel]
-        self.lbl_channels_vod.setText(f"Videos ({self.list_channels_vod.count()})")
+        self.ui.lbl_channels_vod.setText(f"Videos ({self.ui.list_channels_vod.count()})")
 
     def select_channel_vod(self):
         """When a channel is selected."""
         self.show_loader()
-        if self.list_channels_vod.currentItem():
-            channel = self.list_channels_vod.currentItem().text()
+        if self.ui.list_channels_vod.currentItem():
+            channel = self.ui.list_channels_vod.currentItem().text()
             url = self.current_channels_vod[channel]
-            self.txt_url.setText(url)
+            self.ui.txt_url.setText(url)
 
             url_image = self.pl.vod_details[url]["stream_icon"]
             image = QImage()
             image.loadFromData(requests.get(url_image).content)
-            self.picture_vod.setPixmap(
+            self.ui.picture_vod.setPixmap(
                 QPixmap(image).scaled(
-                    self.picture_vod.width(),
-                    self.picture_vod.height(),
+                    self.ui.picture_vod.width(),
+                    self.ui.picture_vod.height(),
                     Qt.KeepAspectRatio,
                     Qt.SmoothTransformation,
                 )
@@ -737,69 +738,69 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def select_group_series(self):
         """When a group is selected."""
         self.show_loader()
-        self.list_channels_series.setCurrentItem(None)
-        self.list_channels_series.clear()
+        self.ui.list_channels_series.setCurrentItem(None)
+        self.ui.list_channels_series.clear()
         self.current_categ_series = ""
-        if self.list_categ_series.currentItem():
-            self.current_categ_series = self.list_categ_series.currentItem().text()
+        if self.ui.list_categ_series.currentItem():
+            self.current_categ_series = self.ui.list_categ_series.currentItem().text()
             # print(self.current_categ_2)
             self.update_channels_series()
         self.hide_loader()
 
     def update_channels_series(self):
         """Update the list "channels" with available / filtered elements."""
-        fltr = self.txt_filter_channels_series.text()
-        self.list_channels_series.setCurrentItem(None)
-        self.list_channels_series.clear()
+        fltr = self.ui.txt_filter_channels_series.text()
+        self.ui.list_channels_series.setCurrentItem(None)
+        self.ui.list_channels_series.clear()
         self.current_channels_series = {}
-        self.txt_url.setText("")
+        self.ui.txt_url.setText("")
         if self.current_categ_series:
             for channel in self.pl.series[self.current_categ_series]["OTHERS"]:
                 if fltr.lower() in channel.lower():
-                    self.list_channels_series.addItem(channel)
+                    self.ui.list_channels_series.addItem(channel)
                     self.current_channels_series[channel] = self.pl.series[self.current_categ_series]["OTHERS"][
                         channel
                     ]
         else:
             # If no category is selected, display all available channels.
-            for i in range(self.list_categ_series.count()):
-                categ_series = self.list_categ_series.item(i).text()
+            for i in range(self.ui.list_categ_series.count()):
+                categ_series = self.ui.list_categ_series.item(i).text()
                 for channel in self.pl.series[categ_series]["OTHERS"]:
                     if fltr.lower() in channel.lower():
-                        self.list_channels_series.addItem(channel)
+                        self.ui.list_channels_series.addItem(channel)
                         self.current_channels_series[channel] = self.pl.series[categ_series]["OTHERS"][channel]
-        self.list_episodes.setCurrentItem(None)
-        self.list_episodes.clear()
-        self.lbl_channels_series.setText(f"Videos ({self.list_channels_series.count()})")
+        self.ui.list_episodes.setCurrentItem(None)
+        self.ui.list_episodes.clear()
+        self.ui.lbl_channels_series.setText(f"Videos ({self.ui.list_channels_series.count()})")
 
     def select_channel_series(self):
         """When a channel is selected."""
         self.show_loader()
-        self.txt_url.setText("")
-        if not self.list_channels_series.currentItem():
+        self.ui.txt_url.setText("")
+        if not self.ui.list_channels_series.currentItem():
             self.hide_loader()
             return
-        channel = self.list_channels_series.currentItem().text()
+        channel = self.ui.list_channels_series.currentItem().text()
         series_id = self.current_channels_series[channel]
         self.current_episodes = self.pl.get_series(series_id)
-        self.list_episodes.setCurrentItem(None)
-        self.list_episodes.clear()
+        self.ui.list_episodes.setCurrentItem(None)
+        self.ui.list_episodes.clear()
         for e in self.current_episodes:
-            self.list_episodes.addItem(e)
+            self.ui.list_episodes.addItem(e)
         self.hide_loader()
 
     def select_episode(self):
         """When an episode is selected."""
         self.show_loader()
-        if self.list_episodes.currentItem():
-            ep = self.list_episodes.currentItem().text()
+        if self.ui.list_episodes.currentItem():
+            ep = self.ui.list_episodes.currentItem().text()
             url = self.current_episodes[ep]
-            self.txt_url.setText(url)
+            self.ui.txt_url.setText(url)
         self.hide_loader()
 
     def watch(self):
         """ "Launch player with correct parameters."""
-        url = self.txt_url.text()
+        url = self.ui.txt_url.text()
         if self.player_process:
             # Kill the previous process because we don't want more than 1 player
             with contextlib.suppress(Exception):
@@ -809,21 +810,24 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                         proc.kill()
             self.player_process = None
         # Create a new process in a separated thread
+        param_url = url.replace("&", r"\&")
+        if platform.system() == "Windows":
+            param_url = url.replace("&", "^&")
         self.player_process = subprocess.Popen(
-            [self.config_player, url.replace("&", "^&"), self.config_player_params],
+            [self.config_player, param_url, self.config_player_params],
             shell=True,
         )
 
     def show_loader(self, message: str = "LOADING..."):
         """Display the loader."""
-        self.lbl_wait.setText(message)
-        self.lbl_wait.show()
-        self.lbl_wait.repaint()
+        self.ui.lbl_wait.setText(message)
+        self.ui.lbl_wait.show()
+        self.ui.lbl_wait.repaint()
 
     def hide_loader(self):
         """Hide the loader."""
-        self.lbl_wait.hide()
-        self.lbl_wait.repaint()
+        self.ui.lbl_wait.hide()
+        self.ui.lbl_wait.repaint()
 
     def save_config(self):
         """Save the current parameters to a config file."""
@@ -852,13 +856,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def url_changed(self):
         """When the URL is changed, enable / disable the "Watch" button."""
-        if self.txt_url.text():
-            self.btn_watch.setEnabled(True)
+        if self.ui.txt_url.text():
+            self.ui.btn_watch.setEnabled(True)
         else:
-            self.btn_watch.setEnabled(False)
+            self.ui.btn_watch.setEnabled(False)
 
     def update_menu_status(self):
         if self.latest_server and self.latest_username and self.latest_password:
-            self.menuXtream.setEnabled(True)
+            self.ui.menuXtream.setEnabled(True)
         else:
-            self.menuXtream.setEnabled(False)
+            self.ui.menuXtream.setEnabled(False)

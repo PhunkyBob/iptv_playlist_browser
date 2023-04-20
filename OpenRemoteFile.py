@@ -3,10 +3,9 @@
 This class allows to display the "Open remote file" dialog box.
 """
 
-from PyQt5.QtWidgets import QDialog
-from PyQt5.uic import loadUi
-from PyQt5 import QtCore
-import tools
+from PySide6.QtWidgets import QDialog
+from PySide6 import QtCore
+from ui.remote_file_pyside6 import Ui_Dialog
 
 margin = 10
 
@@ -17,36 +16,37 @@ class OpenRemoteFile(QDialog):
 
     def __init__(self, parent=None, url="", remember=False):
         super().__init__(parent)
-        loadUi(tools.resource_path("ui/remote_file.ui"), self)
+        self.ui = Ui_Dialog()
+        self.ui.setupUi(self)
         self.setWindowFlags(self.windowFlags() & ~QtCore.Qt.WindowContextHelpButtonHint)
         self.setMaximumHeight(self.height())
-        self.txt_url.setText(url)
-        self.chk_save.setChecked(remember)
+        self.ui.txt_url.setText(url)
+        self.ui.chk_save.setChecked(remember)
         self.connect_signals_slots()
         self.verif_fields()
 
     def resizeEvent(self, *args):
-        """ Resize and move all elements when window is resized. """
+        """Resize and move all elements when window is resized."""
         QDialog.resizeEvent(self, *args)
-        self.txt_url.resize(self.width() - 50 - margin, 25)
-        self.btn_ok.move(
-            self.width() - self.btn_ok.width() - self.btn_cancel.width() - 2 * margin,
+        self.ui.txt_url.resize(self.width() - 50 - margin, 25)
+        self.ui.btn_ok.move(
+            self.width() - self.ui.btn_ok.width() - self.ui.btn_cancel.width() - 2 * margin,
             60,
         )
-        self.btn_cancel.move(self.width() - self.btn_cancel.width() - 1 * margin, 60)
+        self.ui.btn_cancel.move(self.width() - self.ui.btn_cancel.width() - 1 * margin, 60)
 
     def connect_signals_slots(self):
-        """ Link elements signals to functions. """
-        self.btn_cancel.clicked.connect(self.close)
-        self.btn_ok.clicked.connect(self.click_ok)
-        self.txt_url.textChanged.connect(self.verif_fields)
+        """Link elements signals to functions."""
+        self.ui.btn_cancel.clicked.connect(self.close)
+        self.ui.btn_ok.clicked.connect(self.click_ok)
+        self.ui.txt_url.textChanged.connect(self.verif_fields)
 
     def click_ok(self):
-        """ When button "OK" is clicked, save the values. """
-        self.url = self.txt_url.text()
-        self.remember = self.chk_save.isChecked()
+        """When button "OK" is clicked, save the values."""
+        self.url = self.ui.txt_url.text()
+        self.remember = self.ui.chk_save.isChecked()
         self.close()
 
     def verif_fields(self):
-        """ Enable the "OK" button only when all fields are correct. """
-        self.btn_ok.setEnabled(len(self.txt_url.text()) > 0)
+        """Enable the "OK" button only when all fields are correct."""
+        self.ui.btn_ok.setEnabled(len(self.ui.txt_url.text()) > 0)
