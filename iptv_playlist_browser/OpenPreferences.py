@@ -5,7 +5,7 @@ This class allows to display the "Preferences" dialog box.
 
 from PySide6.QtWidgets import QDialog, QFileDialog
 from PySide6 import QtCore, QtGui
-from ui.preferences_pyside6 import Ui_Dialog
+from .preferences_pyside6 import Ui_Dialog
 import os
 
 

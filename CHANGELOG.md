@@ -2,7 +2,7 @@
 
 ## 1.5.0 (2023-04-20)
 - [CHANGE] Use PySide6 instead of Qt5. 
-
+- [CHANGE] Converted into Python module. 
 
 ## 1.4.1 (2023-01-01)
 - [NEW] Download playlist from Xtream.

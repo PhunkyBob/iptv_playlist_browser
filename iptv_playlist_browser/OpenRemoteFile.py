@@ -5,7 +5,7 @@ This class allows to display the "Open remote file" dialog box.
 
 from PySide6.QtWidgets import QDialog
 from PySide6 import QtCore
-from ui.remote_file_pyside6 import Ui_Dialog
+from .remote_file_pyside6 import Ui_Dialog
 
 margin = 10
 

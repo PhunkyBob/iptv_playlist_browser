@@ -5,7 +5,7 @@ This class allows to display the "Open Xtream Code" dialog box.
 
 from PySide6.QtWidgets import QDialog
 from PySide6 import QtCore
-from ui.xtream_code_pyside6 import Ui_Dialog
+from .xtream_code_pyside6 import Ui_Dialog
 
 margin = 10
 

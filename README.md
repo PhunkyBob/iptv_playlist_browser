@@ -8,6 +8,10 @@ Please remember to use only legal streams.
 ```
 python iptv_playlist_browser_gui.py
 ```
+or
+```
+python -m iptv_playlist_browser
+```
 or try the [experimental binary](https://github.com/PhunkyBob/iptv_playlist_browser/releases/latest). 
 
 In your first run, go to `Preferences...` menu and set a path for your desired video player. 
@@ -130,28 +134,38 @@ Note that not all providers gives this functionality.
 - [Python 3.9+](https://www.python.org/downloads/)
 
 ### Install
-In a command line editor: 
+#### Clone repository
 ```
 git clone https://github.com/PhunkyBob/iptv_playlist_browser.git
 cd iptv_playlist_browser
-python -m venv env
-env\Scripts\activate.bat
-pip install -U pip
-pip install -r requirements.txt
+```
+
+#### Create virtual environment
+With `Poetry` (recommended) or `pip`. 
+```
+poetry shell
+poetry install
+```
+or
+```
+python -m venv venv
+venv\Scripts\activate.bat
+python -m pip install -U pip
+pip install -e .
 ```
 
 ### Compilation
 To create Python files from Qt `.ui` files: 
 ```
-pyside6-uic generate_playlist.ui -o generate_playlist_pyside6.py
-pyside6-uic local_file.ui -o local_file_pyside6.py
-pyside6-uic main_ui.ui -o main_ui_pyside6.py
-pyside6-uic preferences.ui -o preferences_pyside6.py
-pyside6-uic remote_file.ui -o remote_file_pyside6.py
-pyside6-uic xtream_code.ui -o xtream_code_pyside6.py
+pyside6-uic ui\generate_playlist.ui -o iptv_playlist_browser\generate_playlist_pyside6.py
+pyside6-uic ui\local_file.ui -o iptv_playlist_browser\local_file_pyside6.py
+pyside6-uic ui\main_ui.ui -o iptv_playlist_browser\main_ui_pyside6.py
+pyside6-uic ui\preferences.ui -o iptv_playlist_browser\preferences_pyside6.py
+pyside6-uic ui\remote_file.ui -o iptv_playlist_browser\remote_file_pyside6.py
+pyside6-uic ui\xtream_code.ui -o iptv_playlist_browser\xtream_code_pyside6.py
 ```
 
 To create Windows `.exe`file: 
 ```
-pyinstaller --noconfirm --onefile --windowed --icon "resources\play-button.ico" --paths "ui" "iptv_playlist_browser_gui.py"
+pyinstaller --noconfirm --onefile --windowed --icon "resources\play-button.ico" --paths "iptv_playlist_browser" "iptv_playlist_browser_gui.py"
 ```

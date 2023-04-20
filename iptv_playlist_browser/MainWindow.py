@@ -7,24 +7,24 @@ This class allows to display the main application window.
 from PySide6.QtWidgets import QMainWindow, QMessageBox, QFileDialog
 from PySide6.QtGui import QImage, QPixmap
 from PySide6.QtCore import Qt
-from ui.main_ui_pyside6 import Ui_MainWindow
-from playlist import Playlist
+from PySide6 import QtCore, QtGui
 import subprocess
 import psutil
-from PySide6 import QtCore, QtGui
 from datetime import datetime
 import configparser
 import contextlib
 import os
-from OpenPreferences import OpenPreferences
-from OpenLocalFile import OpenLocalFile
-from OpenRemoteFile import OpenRemoteFile
-from OpenXtream import OpenXtream
-from GeneratePlaylist import GeneratePlaylist
 import requests
 from typing import Dict, Set
 from datetime import datetime
 import platform
+from .main_ui_pyside6 import Ui_MainWindow
+from .OpenPreferences import OpenPreferences
+from .OpenLocalFile import OpenLocalFile
+from .OpenRemoteFile import OpenRemoteFile
+from .OpenXtream import OpenXtream
+from .GeneratePlaylist import GeneratePlaylist
+from .playlist import Playlist
 
 MARGIN = 10
 CONFIG_POSSIBLE_FALSE: Set = {"0", "", "n", "no", "false"}
