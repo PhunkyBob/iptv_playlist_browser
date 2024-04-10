@@ -8,7 +8,7 @@ import re
 import requests
 import json
 import base64
-from typing import Tuple, Set, List, Dict
+from typing import Optional, Tuple, Set, List, Dict
 from collections import defaultdict
 
 
@@ -398,23 +398,42 @@ class Playlist:
         return output_file
 
     @staticmethod
-    def _get_playlist_lines(channels: Dict) -> List[str]:
+    def _get_playlist_lines(
+        channels: Dict, filter_group: Optional[List[str]] = None, filter_title: Optional[List[str]] = None
+    ) -> List[str]:
         lines: List[str] = []
         for lvl1 in channels:
             for lvl2 in channels[lvl1]:
                 for title, url in channels[lvl1][lvl2].items():
-                    lines.extend((f'#EXTINF:-1 group-title="{lvl1}",{title}', url))
+                    group_ok = filter_group is None or any(
+                        word.strip().lower() in lvl1.lower() for word in filter_group
+                    )
+                    title_ok = filter_title is None or any(
+                        word.strip().lower() in title.lower() for word in filter_title
+                    )
+                    if group_ok and title_ok:
+                        lines.extend((f'#EXTINF:-1 group-title="{lvl1}",{title}', url))
         return lines
 
     def generate_m3u(
-        self, output_file: str, export_live: bool = True, export_vod: bool = False, export_series: bool = False
+        self,
+        output_file: str,
+        export_live: bool = True,
+        export_vod: bool = False,
+        export_series: bool = False,
+        filter_group: Optional[List[str]] = None,
+        filter_title: Optional[List[str]] = None,
     ):
         with open(output_file, "wt", encoding="utf-8") as f:
             f.write("#EXTM3U\n")
             if export_live:
-                f.writelines(line + "\n" for line in Playlist._get_playlist_lines(self.channels))
+                f.writelines(
+                    line + "\n" for line in Playlist._get_playlist_lines(self.channels, filter_group, filter_title)
+                )
             if export_vod:
-                f.writelines(line + "\n" for line in Playlist._get_playlist_lines(self.vod))
+                f.writelines(
+                    line + "\n" for line in Playlist._get_playlist_lines(self.vod, filter_group, filter_title)
+                )
             if export_series:
                 # TODO: handle this case, but it will be a lot of lines
                 # f.writelines(line + "\n" for line in Playlist._get_playlist_lines(self.series))

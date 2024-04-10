@@ -15,6 +15,8 @@ class GeneratePlaylist(QDialog):
     export_live: bool = False
     export_vod: bool = False
     export_series: bool = False
+    filter_group: str = ""
+    filter_title: str = ""
 
     def __init__(self, parent=None, url=""):
         super().__init__(parent)
@@ -57,6 +59,8 @@ class GeneratePlaylist(QDialog):
         self.export_live = self.ui.chk_live.isChecked()
         self.export_vod = self.ui.chk_vod.isChecked()
         self.export_series = self.ui.chk_series.isChecked()
+        self.filter_group = self.ui.txt_group_filter.text()
+        self.filter_title = self.ui.txt_title_filter.text()
         self.close()
 
     def verif_fields(self):

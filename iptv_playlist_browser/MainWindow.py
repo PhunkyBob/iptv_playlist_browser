@@ -430,6 +430,8 @@ class MainWindow(QMainWindow):
                 export_live=dialog.ui.chk_live.isChecked(),
                 export_vod=dialog.ui.chk_vod.isChecked(),
                 export_series=dialog.ui.chk_series.isChecked(),
+                filter_group=dialog.filter_group.split(","),
+                filter_title=dialog.filter_title.split(","),
             )
             self.hide_loader()
             msgBox = QMessageBox()
@@ -814,7 +816,6 @@ class MainWindow(QMainWindow):
             [self.config_player, url, self.config_player_params],
             shell=False,
         )
-
 
     def show_loader(self, message: str = "LOADING..."):
         """Display the loader."""
