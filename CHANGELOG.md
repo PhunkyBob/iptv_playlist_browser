@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.7.0 (2024-04-12)
+
+- [CHANGE] Use default file dialog box.
+
 ## 1.6.0 (2024-04-10)
 
 - [NEW] Add filter option on playlist generation.

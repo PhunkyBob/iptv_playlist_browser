@@ -386,13 +386,13 @@ class MainWindow(QMainWindow):
 
     def download_playlist(self, playlist_plus: bool = False):
         """Download playlist from xtream."""
-        options = QFileDialog.Options()
-        options |= QFileDialog.DontUseNativeDialog
+        # options = QFileDialog.Options()
+        # options |= QFileDialog.DontUseNativeDialog
         if folder := QFileDialog.getExistingDirectory(
             self,
             "Download playlist in folder",
             "",
-            options=options,
+            # options=options,
         ):
             self.show_loader("Downloading playlist...")
             filename = Playlist.download_m3u(

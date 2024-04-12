@@ -79,14 +79,14 @@ class OpenLocalFile(QDialog):
 
     def open_filename_dialog(self):
         """Choose a playlist file."""
-        options = QFileDialog.Options()
-        options |= QFileDialog.DontUseNativeDialog
+        # options = QFileDialog.Options()
+        # options |= QFileDialog.DontUseNativeDialog
         filename, _ = QFileDialog.getOpenFileName(
             self,
             "Open local playlist",
             "",
             "Playlists (*.m3u);;All Files (*)",
-            options=options,
+            # options=options,
         )
         if filename:
             self.ui.txt_url.setText(filename)

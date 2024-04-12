@@ -66,14 +66,14 @@ class OpenPreferences(QDialog):
 
     def open_filename_dialog(self):
         """Choose a player binary file."""
-        options = QFileDialog.Options()
-        options |= QFileDialog.DontUseNativeDialog
+        # options = QFileDialog.Options()
+        # options |= QFileDialog.DontUseNativeDialog
         filename, _ = QFileDialog.getOpenFileName(
             self,
             "Choose player executable",
             "",
             "Player (*.exe);;All Files (*)",
-            options=options,
+            # options=options,
         )
         if filename:
             self.ui.txt_player.setText(filename)
